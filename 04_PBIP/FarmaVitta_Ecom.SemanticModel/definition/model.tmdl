@@ -1,0 +1,38 @@
+model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: pt-BR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["PastaProjeto","fnCsv","dCalendario","dLoja","dProduto","dFornecedor","dCliente","dCanal","fVendas","fItensVenda","fMetas","fDespesas","dDispositivo","dOrigemTrafego","dMotivoSatisfacao","dIniciativa","dEtapaFunil","dMaturidade","fPedidosDigitais","fSessoesDigitais","fAvaliacoesProduto","fPesquisasSatisfacao","fCustosDigitais","fExperimentosAB","fRoadmapIniciativas","_Medidas"]
+
+ref table dCalendario
+ref table dLoja
+ref table dProduto
+ref table dFornecedor
+ref table dCliente
+ref table dCanal
+ref table fVendas
+ref table fItensVenda
+ref table fMetas
+ref table fDespesas
+ref table dDispositivo
+ref table dOrigemTrafego
+ref table dMotivoSatisfacao
+ref table dIniciativa
+ref table dEtapaFunil
+ref table dMaturidade
+ref table fPedidosDigitais
+ref table fSessoesDigitais
+ref table fAvaliacoesProduto
+ref table fPesquisasSatisfacao
+ref table fCustosDigitais
+ref table fExperimentosAB
+ref table fRoadmapIniciativas
+ref table _Medidas
+

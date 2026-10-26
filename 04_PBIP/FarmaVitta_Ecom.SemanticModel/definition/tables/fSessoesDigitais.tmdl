@@ -1,0 +1,109 @@
+/// Funil agregado diário (data × loja × canal × dispositivo × origem). pedidos fecha com fVendas por dia × loja × canal.
+table fSessoesDigitais
+	lineageTag: 728b6282-6a89-518d-b1b1-95a078fe2d56
+
+	column data
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		isHidden
+		lineageTag: e733f101-d845-5c44-b6ed-c3063eb31857
+		summarizeBy: none
+		sourceColumn: data
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column id_loja
+		dataType: string
+		isHidden
+		lineageTag: 0a4c9644-5601-512b-86b8-5fc519953d8d
+		summarizeBy: none
+		sourceColumn: id_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal
+		dataType: string
+		isHidden
+		lineageTag: a6778044-673b-5474-8da4-d64e9af33fab
+		summarizeBy: none
+		sourceColumn: canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_dispositivo
+		dataType: string
+		isHidden
+		lineageTag: a97d9ee3-9cbb-5589-a7b4-8468ef217743
+		summarizeBy: none
+		sourceColumn: id_dispositivo
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_origem
+		dataType: string
+		isHidden
+		lineageTag: 7afc54af-8306-59a8-bb0a-56e3d885a1fa
+		summarizeBy: none
+		sourceColumn: id_origem
+
+		annotation SummarizationSetBy = Automatic
+
+	column sessoes
+		dataType: int64
+		isHidden
+		lineageTag: 1f2440b8-a843-58f2-873f-98a90e32d836
+		summarizeBy: none
+		sourceColumn: sessoes
+
+		annotation SummarizationSetBy = Automatic
+
+	column pageviews
+		dataType: int64
+		isHidden
+		lineageTag: 3d262ee5-9760-588b-a5e1-d58398ee7247
+		summarizeBy: none
+		sourceColumn: pageviews
+
+		annotation SummarizationSetBy = Automatic
+
+	column add_to_cart
+		dataType: int64
+		isHidden
+		lineageTag: 7a01285a-44b4-5e80-8dbf-77cc619fffb6
+		summarizeBy: none
+		sourceColumn: add_to_cart
+
+		annotation SummarizationSetBy = Automatic
+
+	column iniciou_checkout
+		dataType: int64
+		isHidden
+		lineageTag: a058b505-e555-54db-af54-f6bbe7e5fd29
+		summarizeBy: none
+		sourceColumn: iniciou_checkout
+
+		annotation SummarizationSetBy = Automatic
+
+	column pedidos
+		dataType: int64
+		isHidden
+		lineageTag: 84f3d7b6-83d8-5b62-82a2-f6664014a63d
+		summarizeBy: none
+		sourceColumn: pedidos
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fSessoesDigitais = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\f_sessoes_digitais.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"data", type date}, {"id_loja", type text}, {"canal", type text}, {"id_dispositivo", type text}, {"id_origem", type text}, {"sessoes", Int64.Type}, {"pageviews", Int64.Type}, {"add_to_cart", Int64.Type}, {"iniciou_checkout", Int64.Type}, {"pedidos", Int64.Type}}, "en-US"),
+				    Ultimo = Tipado,
+				    Final = Table.SelectColumns(Ultimo, {"data", "id_loja", "canal", "id_dispositivo", "id_origem", "sessoes", "pageviews", "add_to_cart", "iniciou_checkout", "pedidos"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

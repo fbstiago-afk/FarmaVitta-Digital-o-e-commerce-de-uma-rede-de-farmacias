@@ -1,0 +1,148 @@
+relationship fb13fb51-71b0-5355-8a31-0fe8d3cdcc28
+	fromColumn: fVendas.data_venda
+	toColumn: dCalendario.Data
+
+relationship d7e7342e-2549-5ccc-badc-2857e58dda06
+	fromColumn: fItensVenda.data_venda
+	toColumn: dCalendario.Data
+
+relationship 01b545dc-e756-5fe1-b0e1-9d7053f22539
+	fromColumn: fMetas.data_mes
+	toColumn: dCalendario.Data
+
+relationship 7f09904d-fb76-5a0d-b7d1-e13e9bd7ce6c
+	fromColumn: fDespesas.data_mes
+	toColumn: dCalendario.Data
+
+relationship 51ad4d56-137d-526a-a417-c03df25224eb
+	fromColumn: fVendas.id_loja
+	toColumn: dLoja.id_loja
+
+relationship 9062ad29-46d1-5631-a869-21640cf92004
+	fromColumn: fItensVenda.id_loja
+	toColumn: dLoja.id_loja
+
+relationship b4f1f0b8-e7ec-5a76-aa7e-a5494b1fc872
+	fromColumn: fMetas.id_loja
+	toColumn: dLoja.id_loja
+
+relationship b926d27e-adfd-5c32-aa42-5a35ff3b592b
+	fromColumn: fDespesas.id_loja
+	toColumn: dLoja.id_loja
+
+relationship e9bd4a2e-59fe-5442-8d09-5531f2060860
+	fromColumn: fItensVenda.id_produto
+	toColumn: dProduto.id_produto
+
+relationship 611e1996-926c-5c16-a451-c93f571afaff
+	fromColumn: dProduto.id_fornecedor
+	toColumn: dFornecedor.id_fornecedor
+
+relationship 35574228-e113-53fe-b5d9-aae87c5941cf
+	fromColumn: fVendas.id_cliente
+	toColumn: dCliente.id_cliente
+
+relationship 01d0d2ce-99fc-5f30-b157-7ecc28610a05
+	fromColumn: fItensVenda.id_cliente
+	toColumn: dCliente.id_cliente
+
+relationship cb45d4e6-7758-57c2-873f-8364b1f1db21
+	fromColumn: fVendas.canal
+	toColumn: dCanal.Canal
+
+relationship d15a01cc-a078-5b76-a793-fa46ca56241d
+	fromColumn: fItensVenda.canal
+	toColumn: dCanal.Canal
+
+relationship f539710e-496e-58fa-aef8-8542dcaa1c19
+	fromColumn: fPedidosDigitais.data_venda
+	toColumn: dCalendario.Data
+
+relationship 3a600d90-66f3-59fb-a755-39e7f6741311
+	fromColumn: fPedidosDigitais.id_loja
+	toColumn: dLoja.id_loja
+
+relationship a2452527-036c-54c1-8dd3-b891bb9e6c15
+	fromColumn: fPedidosDigitais.canal
+	toColumn: dCanal.Canal
+
+relationship 5af9bacf-95ec-5a73-be22-7af2e872dd80
+	fromColumn: fPedidosDigitais.id_cliente
+	toColumn: dCliente.id_cliente
+
+relationship 2b904b00-bf28-5832-809d-acdc407089ef
+	fromColumn: fSessoesDigitais.data
+	toColumn: dCalendario.Data
+
+relationship f6c1d2c0-e735-5f51-9bed-77ef37736c65
+	fromColumn: fSessoesDigitais.id_loja
+	toColumn: dLoja.id_loja
+
+relationship b4947ba3-19c1-54b3-8a8b-6f2794d15297
+	fromColumn: fSessoesDigitais.canal
+	toColumn: dCanal.Canal
+
+relationship d8a83fc4-7b9e-593a-b692-1d0fb863e515
+	fromColumn: fSessoesDigitais.id_dispositivo
+	toColumn: dDispositivo.id_dispositivo
+
+relationship 13a0c6e9-b54a-520d-87b9-8791888dbc81
+	fromColumn: fSessoesDigitais.id_origem
+	toColumn: dOrigemTrafego.id_origem
+
+relationship 6e6d52c8-75bd-5554-8fcf-3c0b12a5dbce
+	fromColumn: fAvaliacoesProduto.data_avaliacao
+	toColumn: dCalendario.Data
+
+relationship 71cb2e21-9f2b-58d8-9905-9b1b109223fe
+	fromColumn: fAvaliacoesProduto.id_produto
+	toColumn: dProduto.id_produto
+
+relationship a2c0391f-d5b4-53c9-b2ef-3bf8edae858a
+	fromColumn: fAvaliacoesProduto.id_cliente
+	toColumn: dCliente.id_cliente
+
+relationship 79457bff-cfec-5526-9638-7b392b93e3d7
+	fromColumn: fAvaliacoesProduto.canal_avaliacao
+	toColumn: dCanal.Canal
+
+relationship 408a080a-9621-5958-bd58-bf975ecc94bc
+	fromColumn: fAvaliacoesProduto.id_loja
+	toColumn: dLoja.id_loja
+
+relationship d7d651ed-ea93-51d3-9177-f181d73d2811
+	fromColumn: fPesquisasSatisfacao.data_pesquisa
+	toColumn: dCalendario.Data
+
+relationship 97ea124f-7b14-513e-ba3f-b3a7c2345680
+	fromColumn: fPesquisasSatisfacao.id_cliente
+	toColumn: dCliente.id_cliente
+
+relationship 5959fe5e-7cc5-5d27-860a-c97ba5b429e4
+	fromColumn: fPesquisasSatisfacao.canal
+	toColumn: dCanal.Canal
+
+relationship f5c41ea0-c217-56d1-b6e0-885c2bc26058
+	fromColumn: fPesquisasSatisfacao.id_loja
+	toColumn: dLoja.id_loja
+
+relationship 1fd95fd0-7fa4-538d-a865-93a8fc317d83
+	fromColumn: fPesquisasSatisfacao.id_motivo_principal
+	toColumn: dMotivoSatisfacao.id_motivo
+
+relationship e498be00-18a2-5350-8ad8-6527b8285914
+	fromColumn: fCustosDigitais.data_mes
+	toColumn: dCalendario.Data
+
+relationship 8407a05e-f2cd-5013-9467-88a0ada63ef9
+	fromColumn: fCustosDigitais.id_loja
+	toColumn: dLoja.id_loja
+
+relationship e7de8c79-59b5-5fa8-b7e6-2cacad6f401f
+	fromColumn: fRoadmapIniciativas.data_mes
+	toColumn: dCalendario.Data
+
+relationship faa2f51f-0a6a-5eac-9694-f0c210be1ed3
+	fromColumn: fRoadmapIniciativas.id_iniciativa
+	toColumn: dIniciativa.id_iniciativa
+

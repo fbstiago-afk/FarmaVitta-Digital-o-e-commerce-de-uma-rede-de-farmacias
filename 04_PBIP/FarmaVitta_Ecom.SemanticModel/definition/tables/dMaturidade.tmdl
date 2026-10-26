@@ -1,0 +1,52 @@
+/// Componentes do score de maturidade digital (desconectada). Alvos são premissas documentadas.
+table dMaturidade
+	lineageTag: 8e00f037-203f-5a1b-a40a-432458924a81
+
+	column 'Ordem Componente'
+		dataType: int64
+		isHidden
+		lineageTag: 5aa9adf3-bdb5-5d2a-b01a-db174a61beb5
+		summarizeBy: none
+		sourceColumn: Ordem Componente
+
+		annotation SummarizationSetBy = Automatic
+
+	column Componente
+		dataType: string
+		lineageTag: dc267420-7959-5123-bed5-f35cfdefbce7
+		summarizeBy: none
+		sourceColumn: Componente
+		sortByColumn: 'Ordem Componente'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Alvo
+		dataType: string
+		lineageTag: 817756f3-9679-567b-a98f-34767798e624
+		summarizeBy: none
+		sourceColumn: Alvo
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fonte Alvo'
+		dataType: string
+		lineageTag: 65ff8816-3431-57bf-8ab1-5ff2cffb44da
+		summarizeBy: none
+		sourceColumn: Fonte Alvo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dMaturidade = m
+		mode: import
+		source =
+				let
+				    Fonte = #table(type table [Ordem Componente = Int64.Type, Componente = text, Alvo = text, Fonte Alvo = text], {
+				        {1, "Conversão", "4,0%", "premissa do projeto (≈ App atual)"},
+				        {2, "OTIF", "95%", "iniciativa I08 do roadmap"},
+				        {3, "NPS", "+50", "iniciativa I09 do roadmap"},
+				        {4, "CSAT", "4,5", "premissa do projeto"},
+				        {5, "Roadmap", "100%", "conclusão média das 15 iniciativas"}})
+				in
+				    Fonte
+
+	annotation PBI_ResultType = Table

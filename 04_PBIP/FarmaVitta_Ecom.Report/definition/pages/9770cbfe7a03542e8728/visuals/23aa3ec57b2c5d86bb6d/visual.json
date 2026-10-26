@@ -1,0 +1,316 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "23aa3ec57b2c5d86bb6d",
+  "position": {
+    "x": 254,
+    "y": 276,
+    "z": 1230,
+    "height": 408,
+    "width": 1028,
+    "tabOrder": 1230
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dCalendario"
+                    }
+                  },
+                  "Property": "Mes Ano"
+                }
+              },
+              "queryRef": "dCalendario.Mes Ano",
+              "nativeQueryRef": "Mes Ano",
+              "displayName": "mes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dCalendario"
+                    }
+                  },
+                  "Property": "AnoMes Num"
+                }
+              },
+              "queryRef": "dCalendario.AnoMes Num",
+              "nativeQueryRef": "AnoMes Num",
+              "displayName": "ord"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "% Promotores"
+                }
+              },
+              "queryRef": "_Medidas.% Promotores",
+              "nativeQueryRef": "% Promotores",
+              "displayName": "prom"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "% Neutros"
+                }
+              },
+              "queryRef": "_Medidas.% Neutros",
+              "nativeQueryRef": "% Neutros",
+              "displayName": "neu"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "% Detratores"
+                }
+              },
+              "queryRef": "_Medidas.% Detratores",
+              "nativeQueryRef": "% Detratores",
+              "displayName": "det"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "NPS"
+                }
+              },
+              "queryRef": "_Medidas.NPS",
+              "nativeQueryRef": "NPS",
+              "displayName": "nps"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Respostas Pesquisa"
+                }
+              },
+              "queryRef": "_Medidas.Respostas Pesquisa",
+              "nativeQueryRef": "Respostas Pesquisa",
+              "displayName": "resp"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\":\"https://vega.github.io/schema/vega-lite/v5.json\",\"data\":{\"name\":\"dataset\"},\"width\":\"container\",\"height\":\"container\",\"encoding\":{\"x\":{\"field\":\"mes\",\"type\":\"ordinal\",\"sort\":{\"field\":\"ord\",\"op\":\"min\",\"order\":\"ascending\"},\"axis\":{\"title\":null,\"labelAngle\":-45}}},\"layer\":[{\"transform\":[{\"fold\":[\"prom\",\"neu\",\"det\"],\"as\":[\"classe\",\"pct\"]},{\"calculate\":\"datum.classe == ''prom'' ? ''Promotores'' : datum.classe == ''neu'' ? ''Neutros'' : ''Detratores''\",\"as\":\"Classe\"},{\"calculate\":\"datum.classe == ''prom'' ? 1 : datum.classe == ''neu'' ? 2 : 3\",\"as\":\"co\"}],\"mark\":{\"type\":\"bar\",\"width\":{\"band\":0.7}},\"encoding\":{\"y\":{\"field\":\"pct\",\"type\":\"quantitative\",\"stack\":\"normalize\",\"axis\":{\"title\":null,\"format\":\".0%\"}},\"color\":{\"field\":\"Classe\",\"type\":\"nominal\",\"scale\":{\"domain\":[\"Promotores\",\"Neutros\",\"Detratores\"],\"range\":[\"#18B89F\",\"#3D6E72\",\"#EF9277\"]},\"legend\":{\"title\":null}},\"order\":{\"field\":\"co\"},\"tooltip\":[{\"field\":\"mes\",\"title\":\"Mês\"},{\"field\":\"Classe\"},{\"field\":\"pct\",\"title\":\"%\",\"format\":\".1%\"}]}},{\"mark\":{\"type\":\"line\",\"color\":\"#F2C46D\",\"strokeWidth\":2.5,\"point\":{\"filled\":true,\"size\":30,\"color\":\"#F2C46D\"}},\"encoding\":{\"y\":{\"field\":\"nps\",\"type\":\"quantitative\",\"axis\":{\"title\":\"NPS\",\"orient\":\"right\",\"grid\":false,\"labelColor\":\"#F2C46D\",\"titleColor\":\"#F2C46D\"}},\"tooltip\":[{\"field\":\"mes\",\"title\":\"Mês\"},{\"field\":\"nps\",\"title\":\"NPS\",\"format\":\"+.1f\"},{\"field\":\"resp\",\"title\":\"Respostas\",\"format\":\",.0f\"}]}}],\"resolve\":{\"scale\":{\"y\":\"independent\"}}}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"view\":{\"stroke\":\"transparent\"},\"background\":\"transparent\",\"font\":\"Segoe UI\",\"padding\":4,\"axis\":{\"labelColor\":\"#9FC9C1\",\"titleColor\":\"#9FC9C1\",\"gridColor\":\"rgba(255,255,255,0.07)\",\"domainColor\":\"rgba(255,255,255,0.15)\",\"tickColor\":\"rgba(255,255,255,0.15)\",\"labelFontSize\":10,\"titleFontSize\":10,\"titleFontWeight\":\"normal\"},\"legend\":{\"labelColor\":\"#E8F3F1\",\"titleColor\":\"#9FC9C1\",\"orient\":\"top\",\"labelFontSize\":10,\"symbolSize\":80},\"text\":{\"color\":\"#E8F3F1\",\"fontSize\":10},\"locale\":{\"number\":{\"decimal\":\",\",\"thousands\":\".\",\"grouping\":[3],\"currency\":[\"R$ \",\"\"]}}}'"
+                }
+              }
+            },
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "enableHighlight": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Composição do NPS por mês'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#DDF5EB'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI Semibold'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Barras = % promotores / neutros / detratores · linha âmbar = NPS (eixo direito)'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#9FC9C1'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

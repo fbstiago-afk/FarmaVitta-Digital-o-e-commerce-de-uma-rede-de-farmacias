@@ -1,0 +1,144 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "name": "dataset"
+  },
+  "width": "container",
+  "height": "container",
+  "encoding": {
+    "y": {
+      "field": "ini",
+      "type": "nominal",
+      "sort": {
+        "field": "pct",
+        "op": "max",
+        "order": "descending"
+      },
+      "axis": {
+        "title": null,
+        "labelLimit": 230
+      }
+    }
+  },
+  "layer": [
+    {
+      "transform": [
+        {
+          "calculate": "1",
+          "as": "one"
+        }
+      ],
+      "mark": {
+        "type": "bar",
+        "cornerRadius": 4,
+        "height": {
+          "band": 0.7
+        },
+        "color": "rgba(255,255,255,0.07)"
+      },
+      "encoding": {
+        "x": {
+          "field": "one",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              0,
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "bar",
+        "cornerRadius": 4,
+        "height": {
+          "band": 0.7
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "pct",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              0,
+              1
+            ]
+          },
+          "axis": {
+            "title": null,
+            "format": ".0%",
+            "grid": false
+          }
+        },
+        "color": {
+          "field": "pilar",
+          "type": "nominal",
+          "scale": {
+            "domain": [
+              "Conversão",
+              "CX",
+              "Produto",
+              "Operação",
+              "Estratégia"
+            ],
+            "range": [
+              "#18B89F",
+              "#DDF5EB",
+              "#F2C46D",
+              "#EF9277",
+              "#5FA8A0"
+            ]
+          },
+          "legend": {
+            "title": null
+          }
+        },
+        "tooltip": [
+          {
+            "field": "ini",
+            "title": "Iniciativa"
+          },
+          {
+            "field": "pilar",
+            "title": "Pilar"
+          },
+          {
+            "field": "pct",
+            "title": "% conclusão",
+            "format": ".0%"
+          },
+          {
+            "field": "st",
+            "title": "Status (último mês)"
+          },
+          {
+            "field": "tri",
+            "title": "Trimestre-alvo"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "dx": 4,
+        "fontSize": 10,
+        "color": "#E8F3F1"
+      },
+      "encoding": {
+        "x": {
+          "field": "pct",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "pct",
+          "format": ".0%"
+        }
+      }
+    }
+  ]
+}

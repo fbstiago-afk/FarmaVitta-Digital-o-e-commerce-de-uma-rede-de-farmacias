@@ -1,0 +1,97 @@
+/// Testes A/B (7 experimentos × 2 variantes). Desconectada: narrativa estratégica, não fato de receita. 'valor' vem arredondado a 2 casas; usar 'lift' informado.
+table fExperimentosAB
+	lineageTag: 408438ef-914a-587c-b9fb-e2736f35434f
+
+	column id_experimento
+		dataType: string
+		isHidden
+		lineageTag: ccea44e7-8b77-5abc-9f20-d4e1eb36bc78
+		summarizeBy: none
+		sourceColumn: id_experimento
+
+		annotation SummarizationSetBy = Automatic
+
+	column Experimento
+		dataType: string
+		lineageTag: 044cf4e0-c74f-5efd-8750-f62f736be76e
+		summarizeBy: none
+		sourceColumn: nome_experimento
+
+		annotation SummarizationSetBy = Automatic
+
+	column Variante
+		dataType: string
+		lineageTag: d677bbf1-5d12-53c8-93c7-ddc6b7621fb1
+		summarizeBy: none
+		sourceColumn: variante
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Inicio Teste'
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: 63c4011b-2579-5a1b-9663-84ab7146174d
+		summarizeBy: none
+		sourceColumn: data_inicio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Fim Teste'
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: fed53c8b-7c14-5a2d-a47d-69a1569fc59f
+		summarizeBy: none
+		sourceColumn: data_fim
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Métrica Teste'
+		dataType: string
+		lineageTag: 7cf09699-c745-59dc-bf3a-ee87f1ae7b36
+		summarizeBy: none
+		sourceColumn: metrica
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor
+		dataType: double
+		isHidden
+		lineageTag: 9c4ebac1-a638-5307-91ab-00cd5e85b2c2
+		summarizeBy: none
+		sourceColumn: valor
+
+		annotation SummarizationSetBy = Automatic
+
+	column lift
+		dataType: double
+		isHidden
+		lineageTag: c3694bde-68df-5c31-b087-8bd72a87ac48
+		summarizeBy: none
+		sourceColumn: lift
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Resultado Teste'
+		dataType: string
+		lineageTag: aa13c5dc-3c70-59b6-b559-126027352da5
+		summarizeBy: none
+		sourceColumn: resultado
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fExperimentosAB = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\f_experimentos_ab.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_experimento", type text}, {"nome_experimento", type text}, {"variante", type text}, {"data_inicio", type date}, {"data_fim", type date}, {"metrica", type text}, {"valor", type number}, {"lift", type number}, {"resultado", type text}}, "en-US"),
+				    Ultimo = Tipado,
+				    Final = Table.SelectColumns(Ultimo, {"id_experimento", "nome_experimento", "variante", "data_inicio", "data_fim", "metrica", "valor", "lift", "resultado"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

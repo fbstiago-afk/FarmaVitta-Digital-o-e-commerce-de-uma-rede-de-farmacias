@@ -1,0 +1,87 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/1.4.0/schema.json",
+  "displayName": "Experiência do Cliente · filtros abrir",
+  "name": "0739cffd294552859060",
+  "options": {
+    "applyOnlyToTargetVisuals": true,
+    "targetVisualNames": [
+      "5a26b3718329559b9ce2",
+      "d264a7b21b0f57818bc1",
+      "948bb8915bb9564897a8",
+      "fdebd861b799553a83e3",
+      "db62bf74995956febae5",
+      "99a78cf2b6bf52bc846a",
+      "5819b7dcd5df5b46b0e6",
+      "7dc2c18b2330509d9a7c",
+      "5c57e2df3ef052babed6",
+      "3db44ea7a79c5d3e9ba3",
+      "dc7bbcdb3b1f5fc1a038"
+    ],
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.3",
+    "activeSection": "9770cbfe7a03542e8728",
+    "sections": {
+      "9770cbfe7a03542e8728": {
+        "visualContainers": {
+          "5a26b3718329559b9ce2": {
+            "singleVisual": {
+              "visualType": "shape"
+            }
+          },
+          "d264a7b21b0f57818bc1": {
+            "singleVisual": {
+              "visualType": "textbox"
+            }
+          },
+          "948bb8915bb9564897a8": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          },
+          "fdebd861b799553a83e3": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "db62bf74995956febae5": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "99a78cf2b6bf52bc846a": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "5819b7dcd5df5b46b0e6": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "7dc2c18b2330509d9a7c": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "5c57e2df3ef052babed6": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "3db44ea7a79c5d3e9ba3": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          },
+          "dc7bbcdb3b1f5fc1a038": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          }
+        }
+      }
+    }
+  }
+}

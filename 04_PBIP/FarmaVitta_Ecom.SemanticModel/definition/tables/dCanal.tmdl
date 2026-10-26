@@ -1,0 +1,39 @@
+/// Canais de venda. Grupo Canal separa Loja física de Digital (Site + Aplicativo + Delivery).
+table dCanal
+	lineageTag: ee41c53c-7753-5999-8289-0ecd50ecf74c
+
+	column Canal
+		dataType: string
+		lineageTag: c5350053-ee1e-5174-85db-fc157e5ff115
+		summarizeBy: none
+		sourceColumn: Canal
+		sortByColumn: 'Ordem Canal'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ordem Canal'
+		dataType: int64
+		isHidden
+		lineageTag: 32a8e4cf-0d62-5809-8d9b-d73693292300
+		summarizeBy: none
+		sourceColumn: Ordem Canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Grupo Canal'
+		dataType: string
+		lineageTag: 9ec61074-da3d-5dc6-9b73-433d934e3bdb
+		summarizeBy: none
+		sourceColumn: Grupo Canal
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dCanal = m
+		mode: import
+		source =
+				let
+				    Fonte = #table(type table [Canal = text, Ordem Canal = Int64.Type, Grupo Canal = text], {{"Loja física", 1, "Físico"}, {"Aplicativo", 2, "Digital"}, {"Site", 3, "Digital"}, {"Delivery", 4, "Digital"}})
+				in
+				    Fonte
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "name": "dataset"
+  },
+  "width": "container",
+  "height": "container",
+  "encoding": {
+    "x": {
+      "field": "canal",
+      "type": "nominal",
+      "axis": {
+        "title": null,
+        "labelAngle": 0,
+        "orient": "top"
+      }
+    },
+    "y": {
+      "field": "loja",
+      "type": "nominal",
+      "axis": {
+        "title": null
+      }
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "rect",
+        "cornerRadius": 4,
+        "stroke": "#071E23",
+        "strokeWidth": 3
+      },
+      "encoding": {
+        "color": {
+          "field": "otif",
+          "type": "quantitative",
+          "scale": {
+            "range": [
+              "#EF9277",
+              "#F2C46D",
+              "#18B89F"
+            ]
+          },
+          "legend": null
+        },
+        "tooltip": [
+          {
+            "field": "loja",
+            "title": "Loja"
+          },
+          {
+            "field": "canal",
+            "title": "Canal"
+          },
+          {
+            "field": "otif",
+            "title": "OTIF",
+            "format": ".1%"
+          },
+          {
+            "field": "ped",
+            "title": "Pedidos",
+            "format": ",.0f"
+          },
+          {
+            "field": "nps",
+            "title": "NPS",
+            "format": "+.1f"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "fontSize": 12,
+        "fontWeight": 600,
+        "color": "#071E23"
+      },
+      "encoding": {
+        "text": {
+          "field": "otif",
+          "type": "quantitative",
+          "format": ".1%"
+        }
+      }
+    }
+  ]
+}

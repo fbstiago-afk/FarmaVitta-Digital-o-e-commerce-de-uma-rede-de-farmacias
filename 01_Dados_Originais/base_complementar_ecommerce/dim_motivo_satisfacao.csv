@@ -1,0 +1,21 @@
+﻿id_motivo;descricao;polaridade;eixo
+M01;Entrega no prazo;positivo;entrega
+M02;Entrega atrasada;negativo;entrega
+M03;Produto conforme descrição;positivo;produto
+M04;Produto diferente do esperado;negativo;produto
+M05;Preço competitivo;positivo;preço
+M06;Preço elevado;negativo;preço
+M07;Atendimento ágil;positivo;atendimento
+M08;Atendimento demorado;negativo;atendimento
+M09;App fácil de usar;positivo;app
+M10;App com bugs / lento;negativo;app
+M11;Frete acessível;positivo;entrega
+M12;Frete caro;negativo;entrega
+M13;Embalagem cuidadosa;positivo;produto
+M14;Produto danificado;negativo;produto
+M15;Variedade de produtos;positivo;produto
+M16;Falta de estoque no site;negativo;produto
+M17;Programa de fidelidade;positivo;atendimento
+M18;Dificuldade no pagamento;negativo;app
+M19;Recomendaria a FarmaVitta;positivo;geral
+M20;Não recomendaria;negativo;geral

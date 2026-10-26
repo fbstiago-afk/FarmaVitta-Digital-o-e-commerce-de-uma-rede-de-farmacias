@@ -1,0 +1,53 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmarksMetadata/1.0.0/schema.json",
+  "items": [
+    {
+      "name": "9683777d61ef58baa3be",
+      "displayName": "Filtros · Visão Executiva Digital",
+      "children": [
+        "35e28449d5c15acdbc7d",
+        "b3c4c57efdc15269b920"
+      ]
+    },
+    {
+      "name": "427b251eec9f5a20821d",
+      "displayName": "Filtros · Funil & Conversão",
+      "children": [
+        "51a96d91d96a5eb8b495",
+        "a14ea72ed83d57f48fe5"
+      ]
+    },
+    {
+      "name": "5292a0ac49e15899b6c8",
+      "displayName": "Filtros · Experiência do Cliente",
+      "children": [
+        "0739cffd294552859060",
+        "34b7a8472fe3544fa19e"
+      ]
+    },
+    {
+      "name": "dbfc347fb51455adb082",
+      "displayName": "Filtros · Produtos & Desenvolvimento",
+      "children": [
+        "31a2cde6a68c56c38fca",
+        "ba54fb0643a95acfb210"
+      ]
+    },
+    {
+      "name": "c49b6e462d8950429973",
+      "displayName": "Filtros · Clientes & Retenção",
+      "children": [
+        "85fb6a288d475ababaf0",
+        "d650f25c07745abb8bec"
+      ]
+    },
+    {
+      "name": "cc7c9921c3845a66a89e",
+      "displayName": "Filtros · Estratégia de Evolução",
+      "children": [
+        "3953faf91be05309a001",
+        "15a31b4ac11452b1a28e"
+      ]
+    }
+  ]
+}

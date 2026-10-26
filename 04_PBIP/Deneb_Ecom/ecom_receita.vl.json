@@ -1,0 +1,133 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "name": "dataset"
+  },
+  "width": "container",
+  "height": "container",
+  "encoding": {
+    "x": {
+      "field": "mes",
+      "type": "ordinal",
+      "sort": {
+        "field": "ord",
+        "op": "min",
+        "order": "ascending"
+      },
+      "axis": {
+        "title": null,
+        "labelAngle": -45,
+        "labelOverlap": false
+      }
+    }
+  },
+  "layer": [
+    {
+      "layer": [
+        {
+          "mark": {
+            "type": "bar",
+            "cornerRadiusTopLeft": 4,
+            "cornerRadiusTopRight": 4,
+            "width": {
+              "band": 0.68
+            }
+          },
+          "encoding": {
+            "y": {
+              "field": "receita",
+              "type": "quantitative",
+              "axis": {
+                "title": null,
+                "labelExpr": "format(datum.value / 1000, ',.0f') + ' mil'",
+                "tickCount": 5
+              }
+            },
+            "color": {
+              "field": "cor",
+              "type": "nominal",
+              "scale": null
+            },
+            "tooltip": [
+              {
+                "field": "mes",
+                "title": "Mês"
+              },
+              {
+                "field": "receita",
+                "title": "Receita digital",
+                "format": ",.0f"
+              },
+              {
+                "field": "ly",
+                "title": "Ano anterior",
+                "format": ",.0f"
+              },
+              {
+                "field": "share",
+                "title": "Share digital",
+                "format": ".1%"
+              }
+            ]
+          }
+        },
+        {
+          "mark": {
+            "type": "line",
+            "color": "#DDF5EB",
+            "strokeWidth": 2,
+            "opacity": 0.8,
+            "point": {
+              "filled": true,
+              "size": 26,
+              "color": "#DDF5EB"
+            }
+          },
+          "encoding": {
+            "y": {
+              "field": "ly",
+              "type": "quantitative"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "mark": {
+        "type": "line",
+        "color": "#F2C46D",
+        "strokeWidth": 2,
+        "strokeDash": [
+          5,
+          4
+        ],
+        "point": {
+          "filled": true,
+          "size": 20,
+          "color": "#F2C46D"
+        }
+      },
+      "encoding": {
+        "y": {
+          "field": "share",
+          "type": "quantitative",
+          "scale": {
+            "zero": false
+          },
+          "axis": {
+            "title": null,
+            "format": ".0%",
+            "orient": "right",
+            "grid": false,
+            "labelColor": "#F2C46D"
+          }
+        }
+      }
+    }
+  ],
+  "resolve": {
+    "scale": {
+      "y": "independent"
+    }
+  }
+}

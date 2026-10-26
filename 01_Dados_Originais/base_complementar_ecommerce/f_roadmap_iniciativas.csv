@@ -1,0 +1,361 @@
+﻿id_iniciativa;ano_mes;pct_conclusao;impacto_estimado_receita_pct;status_mes
+I01;2024-10;53;0.04;Em andamento
+I01;2024-11;77;0.06;Em andamento
+I01;2024-12;53;0.04;Em andamento
+I01;2025-01;53;0.04;Em andamento
+I01;2025-02;41;0.03;Em andamento
+I01;2025-03;71;0.06;Em andamento
+I01;2025-04;78;0.06;Em andamento
+I01;2025-05;60;0.05;Em andamento
+I01;2025-06;100;0.08;Concluído
+I01;2025-07;100;0.08;Concluído
+I01;2025-08;100;0.08;Concluído
+I01;2025-09;100;0.08;Concluído
+I01;2025-10;100;0.08;Concluído
+I01;2025-11;100;0.08;Concluído
+I01;2025-12;100;0.08;Concluído
+I01;2026-01;100;0.08;Concluído
+I01;2026-02;100;0.08;Concluído
+I01;2026-03;100;0.08;Concluído
+I01;2026-04;100;0.08;Concluído
+I01;2026-05;100;0.08;Concluído
+I01;2026-06;100;0.08;Concluído
+I01;2026-07;100;0.08;Concluído
+I01;2026-08;100;0.08;Concluído
+I01;2026-09;100;0.08;Concluído
+I02;2024-10;61;0.03;Em andamento
+I02;2024-11;27;0.01;Em andamento
+I02;2024-12;56;0.03;Em andamento
+I02;2025-01;31;0.02;Em andamento
+I02;2025-02;31;0.02;Em andamento
+I02;2025-03;51;0.03;Em andamento
+I02;2025-04;48;0.02;Em andamento
+I02;2025-05;49;0.02;Em andamento
+I02;2025-06;29;0.01;Em andamento
+I02;2025-07;39;0.02;Em andamento
+I02;2025-08;32;0.02;Em andamento
+I02;2025-09;44;0.02;Em andamento
+I02;2025-10;53;0.03;Em andamento
+I02;2025-11;51;0.03;Em andamento
+I02;2025-12;30;0.01;Em andamento
+I02;2026-01;44;0.02;Em andamento
+I02;2026-02;50;0.03;Em andamento
+I02;2026-03;25;0.01;Em andamento
+I02;2026-04;70;0.04;Em andamento
+I02;2026-05;70;0.04;Em andamento
+I02;2026-06;70;0.04;Em andamento
+I02;2026-07;70;0.04;Em andamento
+I02;2026-08;70;0.04;Em andamento
+I02;2026-09;70;0.04;Em andamento
+I03;2024-10;46;0.03;Em andamento
+I03;2024-11;58;0.03;Em andamento
+I03;2024-12;62;0.04;Em andamento
+I03;2025-01;73;0.04;Em andamento
+I03;2025-02;51;0.03;Em andamento
+I03;2025-03;62;0.04;Em andamento
+I03;2025-04;73;0.04;Em andamento
+I03;2025-05;57;0.03;Em andamento
+I03;2025-06;44;0.03;Em andamento
+I03;2025-07;67;0.04;Em andamento
+I03;2025-08;49;0.03;Em andamento
+I03;2025-09;100;0.06;Concluído
+I03;2025-10;100;0.06;Concluído
+I03;2025-11;100;0.06;Concluído
+I03;2025-12;100;0.06;Concluído
+I03;2026-01;100;0.06;Concluído
+I03;2026-02;100;0.06;Concluído
+I03;2026-03;100;0.06;Concluído
+I03;2026-04;100;0.06;Concluído
+I03;2026-05;100;0.06;Concluído
+I03;2026-06;100;0.06;Concluído
+I03;2026-07;100;0.06;Concluído
+I03;2026-08;100;0.06;Concluído
+I03;2026-09;100;0.06;Concluído
+I04;2024-10;61;0.05;Em andamento
+I04;2024-11;56;0.04;Em andamento
+I04;2024-12;56;0.04;Em andamento
+I04;2025-01;62;0.05;Em andamento
+I04;2025-02;68;0.05;Em andamento
+I04;2025-03;100;0.08;Concluído
+I04;2025-04;100;0.08;Concluído
+I04;2025-05;100;0.08;Concluído
+I04;2025-06;100;0.08;Concluído
+I04;2025-07;100;0.08;Concluído
+I04;2025-08;100;0.08;Concluído
+I04;2025-09;100;0.08;Concluído
+I04;2025-10;100;0.08;Concluído
+I04;2025-11;100;0.08;Concluído
+I04;2025-12;100;0.08;Concluído
+I04;2026-01;100;0.08;Concluído
+I04;2026-02;100;0.08;Concluído
+I04;2026-03;100;0.08;Concluído
+I04;2026-04;100;0.08;Concluído
+I04;2026-05;100;0.08;Concluído
+I04;2026-06;100;0.08;Concluído
+I04;2026-07;100;0.08;Concluído
+I04;2026-08;100;0.08;Concluído
+I04;2026-09;100;0.08;Concluído
+I05;2024-10;60;0.03;Em andamento
+I05;2024-11;61;0.03;Em andamento
+I05;2024-12;61;0.03;Em andamento
+I05;2025-01;32;0.02;Em andamento
+I05;2025-02;35;0.02;Em andamento
+I05;2025-03;25;0.01;Em andamento
+I05;2025-04;59;0.03;Em andamento
+I05;2025-05;28;0.01;Em andamento
+I05;2025-06;40;0.02;Em andamento
+I05;2025-07;46;0.02;Em andamento
+I05;2025-08;31;0.02;Em andamento
+I05;2025-09;30;0.01;Em andamento
+I05;2025-10;40;0.02;Em andamento
+I05;2025-11;28;0.01;Em andamento
+I05;2025-12;51;0.03;Em andamento
+I05;2026-01;46;0.02;Em andamento
+I05;2026-02;55;0.03;Em andamento
+I05;2026-03;54;0.03;Em andamento
+I05;2026-04;37;0.02;Em andamento
+I05;2026-05;61;0.03;Em andamento
+I05;2026-06;40;0.02;Em andamento
+I05;2026-07;70;0.04;Em andamento
+I05;2026-08;70;0.04;Em andamento
+I05;2026-09;70;0.04;Em andamento
+I06;2024-10;20;0.02;Em andamento
+I06;2024-11;14;0.01;Planejado
+I06;2024-12;27;0.02;Em andamento
+I06;2025-01;23;0.02;Em andamento
+I06;2025-02;43;0.03;Em andamento
+I06;2025-03;23;0.02;Em andamento
+I06;2025-04;28;0.02;Em andamento
+I06;2025-05;12;0.01;Planejado
+I06;2025-06;34;0.03;Em andamento
+I06;2025-07;41;0.03;Em andamento
+I06;2025-08;7;0.01;Planejado
+I06;2025-09;11;0.01;Planejado
+I06;2025-10;36;0.03;Em andamento
+I06;2025-11;4;0.00;Planejado
+I06;2025-12;36;0.03;Em andamento
+I06;2026-01;12;0.01;Planejado
+I06;2026-02;35;0.03;Em andamento
+I06;2026-03;37;0.03;Em andamento
+I06;2026-04;21;0.02;Em andamento
+I06;2026-05;35;0.03;Em andamento
+I06;2026-06;18;0.01;Em andamento
+I06;2026-07;38;0.03;Em andamento
+I06;2026-08;42;0.03;Em andamento
+I06;2026-09;29;0.02;Em andamento
+I07;2024-10;11;0.01;Planejado
+I07;2024-11;41;0.02;Em andamento
+I07;2024-12;43;0.03;Em andamento
+I07;2025-01;33;0.02;Em andamento
+I07;2025-02;28;0.02;Em andamento
+I07;2025-03;41;0.02;Em andamento
+I07;2025-04;17;0.01;Em andamento
+I07;2025-05;20;0.01;Em andamento
+I07;2025-06;43;0.03;Em andamento
+I07;2025-07;39;0.02;Em andamento
+I07;2025-08;9;0.01;Planejado
+I07;2025-09;20;0.01;Em andamento
+I07;2025-10;15;0.01;Planejado
+I07;2025-11;20;0.01;Em andamento
+I07;2025-12;33;0.02;Em andamento
+I07;2026-01;12;0.01;Planejado
+I07;2026-02;9;0.01;Planejado
+I07;2026-03;39;0.02;Em andamento
+I07;2026-04;34;0.02;Em andamento
+I07;2026-05;39;0.02;Em andamento
+I07;2026-06;41;0.02;Em andamento
+I07;2026-07;33;0.02;Em andamento
+I07;2026-08;22;0.01;Em andamento
+I07;2026-09;12;0.01;Planejado
+I08;2024-10;46;0.02;Em andamento
+I08;2024-11;38;0.02;Em andamento
+I08;2024-12;41;0.02;Em andamento
+I08;2025-01;45;0.02;Em andamento
+I08;2025-02;32;0.01;Em andamento
+I08;2025-03;52;0.02;Em andamento
+I08;2025-04;41;0.02;Em andamento
+I08;2025-05;61;0.02;Em andamento
+I08;2025-06;39;0.02;Em andamento
+I08;2025-07;32;0.01;Em andamento
+I08;2025-08;58;0.02;Em andamento
+I08;2025-09;53;0.02;Em andamento
+I08;2025-10;31;0.01;Em andamento
+I08;2025-11;39;0.02;Em andamento
+I08;2025-12;53;0.02;Em andamento
+I08;2026-01;27;0.01;Em andamento
+I08;2026-02;40;0.02;Em andamento
+I08;2026-03;47;0.02;Em andamento
+I08;2026-04;55;0.02;Em andamento
+I08;2026-05;32;0.01;Em andamento
+I08;2026-06;41;0.02;Em andamento
+I08;2026-07;70;0.03;Em andamento
+I08;2026-08;70;0.03;Em andamento
+I08;2026-09;70;0.03;Em andamento
+I09;2024-10;45;0.02;Em andamento
+I09;2024-11;25;0.01;Em andamento
+I09;2024-12;32;0.02;Em andamento
+I09;2025-01;31;0.02;Em andamento
+I09;2025-02;48;0.02;Em andamento
+I09;2025-03;57;0.03;Em andamento
+I09;2025-04;48;0.02;Em andamento
+I09;2025-05;35;0.02;Em andamento
+I09;2025-06;55;0.03;Em andamento
+I09;2025-07;56;0.03;Em andamento
+I09;2025-08;45;0.02;Em andamento
+I09;2025-09;41;0.02;Em andamento
+I09;2025-10;43;0.02;Em andamento
+I09;2025-11;34;0.02;Em andamento
+I09;2025-12;32;0.02;Em andamento
+I09;2026-01;29;0.01;Em andamento
+I09;2026-02;37;0.02;Em andamento
+I09;2026-03;31;0.02;Em andamento
+I09;2026-04;25;0.01;Em andamento
+I09;2026-05;42;0.02;Em andamento
+I09;2026-06;33;0.02;Em andamento
+I09;2026-07;53;0.03;Em andamento
+I09;2026-08;47;0.02;Em andamento
+I09;2026-09;56;0.03;Em andamento
+I10;2024-10;29;0.02;Em andamento
+I10;2024-11;35;0.02;Em andamento
+I10;2024-12;43;0.03;Em andamento
+I10;2025-01;29;0.02;Em andamento
+I10;2025-02;4;0.00;Planejado
+I10;2025-03;30;0.02;Em andamento
+I10;2025-04;32;0.02;Em andamento
+I10;2025-05;5;0.00;Planejado
+I10;2025-06;33;0.02;Em andamento
+I10;2025-07;31;0.02;Em andamento
+I10;2025-08;19;0.01;Em andamento
+I10;2025-09;10;0.01;Planejado
+I10;2025-10;30;0.02;Em andamento
+I10;2025-11;35;0.02;Em andamento
+I10;2025-12;31;0.02;Em andamento
+I10;2026-01;27;0.02;Em andamento
+I10;2026-02;22;0.01;Em andamento
+I10;2026-03;35;0.02;Em andamento
+I10;2026-04;43;0.03;Em andamento
+I10;2026-05;35;0.02;Em andamento
+I10;2026-06;35;0.02;Em andamento
+I10;2026-07;17;0.01;Em andamento
+I10;2026-08;23;0.01;Em andamento
+I10;2026-09;11;0.01;Planejado
+I11;2024-10;56;0.04;Em andamento
+I11;2024-11;28;0.02;Em andamento
+I11;2024-12;26;0.02;Em andamento
+I11;2025-01;37;0.03;Em andamento
+I11;2025-02;34;0.03;Em andamento
+I11;2025-03;45;0.04;Em andamento
+I11;2025-04;49;0.04;Em andamento
+I11;2025-05;45;0.04;Em andamento
+I11;2025-06;24;0.02;Em andamento
+I11;2025-07;30;0.02;Em andamento
+I11;2025-08;52;0.04;Em andamento
+I11;2025-09;57;0.05;Em andamento
+I11;2025-10;48;0.04;Em andamento
+I11;2025-11;58;0.05;Em andamento
+I11;2025-12;54;0.04;Em andamento
+I11;2026-01;28;0.02;Em andamento
+I11;2026-02;40;0.03;Em andamento
+I11;2026-03;22;0.02;Em andamento
+I11;2026-04;54;0.04;Em andamento
+I11;2026-05;49;0.04;Em andamento
+I11;2026-06;43;0.03;Em andamento
+I11;2026-07;70;0.06;Em andamento
+I11;2026-08;70;0.06;Em andamento
+I11;2026-09;70;0.06;Em andamento
+I12;2024-10;69;0.03;Em andamento
+I12;2024-11;51;0.02;Em andamento
+I12;2024-12;41;0.02;Em andamento
+I12;2025-01;78;0.03;Em andamento
+I12;2025-02;77;0.03;Em andamento
+I12;2025-03;63;0.03;Em andamento
+I12;2025-04;69;0.03;Em andamento
+I12;2025-05;75;0.03;Em andamento
+I12;2025-06;49;0.02;Em andamento
+I12;2025-07;40;0.02;Em andamento
+I12;2025-08;51;0.02;Em andamento
+I12;2025-09;43;0.02;Em andamento
+I12;2025-10;52;0.02;Em andamento
+I12;2025-11;53;0.02;Em andamento
+I12;2025-12;100;0.04;Concluído
+I12;2026-01;100;0.04;Concluído
+I12;2026-02;100;0.04;Concluído
+I12;2026-03;100;0.04;Concluído
+I12;2026-04;100;0.04;Concluído
+I12;2026-05;100;0.04;Concluído
+I12;2026-06;100;0.04;Concluído
+I12;2026-07;100;0.04;Concluído
+I12;2026-08;100;0.04;Concluído
+I12;2026-09;100;0.04;Concluído
+I13;2024-10;58;0.03;Em andamento
+I13;2024-11;51;0.03;Em andamento
+I13;2024-12;73;0.04;Em andamento
+I13;2025-01;70;0.04;Em andamento
+I13;2025-02;63;0.03;Em andamento
+I13;2025-03;48;0.02;Em andamento
+I13;2025-04;57;0.03;Em andamento
+I13;2025-05;76;0.04;Em andamento
+I13;2025-06;100;0.05;Concluído
+I13;2025-07;100;0.05;Concluído
+I13;2025-08;100;0.05;Concluído
+I13;2025-09;100;0.05;Concluído
+I13;2025-10;100;0.05;Concluído
+I13;2025-11;100;0.05;Concluído
+I13;2025-12;100;0.05;Concluído
+I13;2026-01;100;0.05;Concluído
+I13;2026-02;100;0.05;Concluído
+I13;2026-03;100;0.05;Concluído
+I13;2026-04;100;0.05;Concluído
+I13;2026-05;100;0.05;Concluído
+I13;2026-06;100;0.05;Concluído
+I13;2026-07;100;0.05;Concluído
+I13;2026-08;100;0.05;Concluído
+I13;2026-09;100;0.05;Concluído
+I14;2024-10;46;0.04;Em andamento
+I14;2024-11;31;0.02;Em andamento
+I14;2024-12;26;0.02;Em andamento
+I14;2025-01;30;0.02;Em andamento
+I14;2025-02;23;0.02;Em andamento
+I14;2025-03;52;0.04;Em andamento
+I14;2025-04;33;0.03;Em andamento
+I14;2025-05;24;0.02;Em andamento
+I14;2025-06;55;0.04;Em andamento
+I14;2025-07;48;0.04;Em andamento
+I14;2025-08;46;0.04;Em andamento
+I14;2025-09;52;0.04;Em andamento
+I14;2025-10;48;0.04;Em andamento
+I14;2025-11;26;0.02;Em andamento
+I14;2025-12;37;0.03;Em andamento
+I14;2026-01;61;0.05;Em andamento
+I14;2026-02;39;0.03;Em andamento
+I14;2026-03;39;0.03;Em andamento
+I14;2026-04;70;0.06;Em andamento
+I14;2026-05;70;0.06;Em andamento
+I14;2026-06;70;0.06;Em andamento
+I14;2026-07;70;0.06;Em andamento
+I14;2026-08;70;0.06;Em andamento
+I14;2026-09;70;0.06;Em andamento
+I15;2024-10;57;0.02;Em andamento
+I15;2024-11;41;0.01;Em andamento
+I15;2024-12;67;0.02;Em andamento
+I15;2025-01;62;0.02;Em andamento
+I15;2025-02;51;0.02;Em andamento
+I15;2025-03;71;0.02;Em andamento
+I15;2025-04;74;0.02;Em andamento
+I15;2025-05;56;0.02;Em andamento
+I15;2025-06;53;0.02;Em andamento
+I15;2025-07;66;0.02;Em andamento
+I15;2025-08;78;0.02;Em andamento
+I15;2025-09;40;0.01;Em andamento
+I15;2025-10;40;0.01;Em andamento
+I15;2025-11;46;0.01;Em andamento
+I15;2025-12;100;0.03;Concluído
+I15;2026-01;100;0.03;Concluído
+I15;2026-02;100;0.03;Concluído
+I15;2026-03;100;0.03;Concluído
+I15;2026-04;100;0.03;Concluído
+I15;2026-05;100;0.03;Concluído
+I15;2026-06;100;0.03;Concluído
+I15;2026-07;100;0.03;Concluído
+I15;2026-08;100;0.03;Concluído
+I15;2026-09;100;0.03;Concluído

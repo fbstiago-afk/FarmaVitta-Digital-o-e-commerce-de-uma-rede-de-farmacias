@@ -1,0 +1,200 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "name": "dataset"
+  },
+  "width": "container",
+  "height": "container",
+  "transform": [
+    {
+      "window": [
+        {
+          "op": "first_value",
+          "field": "val",
+          "as": "topo"
+        },
+        {
+          "op": "lag",
+          "field": "val",
+          "as": "ant"
+        }
+      ],
+      "sort": [
+        {
+          "field": "ord"
+        }
+      ],
+      "frame": [
+        null,
+        null
+      ]
+    },
+    {
+      "calculate": "datum.val / datum.topo",
+      "as": "pct_topo"
+    },
+    {
+      "calculate": "datum.ant ? datum.val / datum.ant : 1",
+      "as": "pct_ant"
+    },
+    {
+      "calculate": "max(datum.pct_topo, 0.006)",
+      "as": "w"
+    },
+    {
+      "calculate": "format(datum.val, ',.0f') + (datum.ord == 1 ? '' : '  ·  ' + format(datum.pct_ant, '.1%') + ' da etapa anterior')",
+      "as": "rot"
+    }
+  ],
+  "encoding": {
+    "y": {
+      "field": "etapa",
+      "type": "ordinal",
+      "sort": {
+        "field": "ord",
+        "op": "min",
+        "order": "ascending"
+      },
+      "axis": {
+        "title": null,
+        "labelFontSize": 12,
+        "labelColor": "#DDF5EB",
+        "labelPadding": 8
+      }
+    }
+  },
+  "layer": [
+    {
+      "transform": [
+        {
+          "calculate": "1",
+          "as": "one"
+        }
+      ],
+      "mark": {
+        "type": "bar",
+        "cornerRadius": 6,
+        "height": {
+          "band": 0.62
+        },
+        "color": "rgba(255,255,255,0.06)"
+      },
+      "encoding": {
+        "x": {
+          "field": "one",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              0,
+              1
+            ]
+          },
+          "axis": null
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "bar",
+        "cornerRadius": 6,
+        "height": {
+          "band": 0.62
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "w",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              0,
+              1
+            ]
+          },
+          "axis": null
+        },
+        "color": {
+          "field": "ord",
+          "type": "ordinal",
+          "scale": {
+            "range": [
+              "#125F61",
+              "#18B89F",
+              "#DDF5EB"
+            ]
+          },
+          "legend": null
+        },
+        "tooltip": [
+          {
+            "field": "etapa",
+            "title": "Etapa"
+          },
+          {
+            "field": "val",
+            "title": "Volume",
+            "format": ",.0f"
+          },
+          {
+            "field": "pct_topo",
+            "title": "% das sessões",
+            "format": ".2%"
+          },
+          {
+            "field": "pct_ant",
+            "title": "% da etapa anterior",
+            "format": ".1%"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.pct_topo < 0.6"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "fontSize": 13,
+        "fontWeight": 600,
+        "align": "left",
+        "dx": 10,
+        "color": "#E8F3F1"
+      },
+      "encoding": {
+        "x": {
+          "field": "w",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "rot"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.pct_topo >= 0.6"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "fontSize": 13,
+        "fontWeight": 600,
+        "align": "right",
+        "dx": -12,
+        "color": "#E8F3F1"
+      },
+      "encoding": {
+        "x": {
+          "field": "w",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "rot"
+        }
+      }
+    }
+  ]
+}

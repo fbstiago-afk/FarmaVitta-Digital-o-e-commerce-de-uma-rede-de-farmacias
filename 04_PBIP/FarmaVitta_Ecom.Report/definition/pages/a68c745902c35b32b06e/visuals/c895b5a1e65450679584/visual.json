@@ -1,0 +1,256 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "c895b5a1e65450679584",
+  "position": {
+    "x": 254,
+    "y": 276,
+    "z": 1230,
+    "height": 408,
+    "width": 1028,
+    "tabOrder": 1230
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dEtapaFunil"
+                    }
+                  },
+                  "Property": "Etapa"
+                }
+              },
+              "queryRef": "dEtapaFunil.Etapa",
+              "nativeQueryRef": "Etapa",
+              "displayName": "etapa"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dEtapaFunil"
+                    }
+                  },
+                  "Property": "Ordem Etapa"
+                }
+              },
+              "queryRef": "dEtapaFunil.Ordem Etapa",
+              "nativeQueryRef": "Ordem Etapa",
+              "displayName": "ord"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Valor Etapa Funil"
+                }
+              },
+              "queryRef": "_Medidas.Valor Etapa Funil",
+              "nativeQueryRef": "Valor Etapa Funil",
+              "displayName": "val"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\":\"https://vega.github.io/schema/vega-lite/v5.json\",\"data\":{\"name\":\"dataset\"},\"width\":\"container\",\"height\":\"container\",\"transform\":[{\"window\":[{\"op\":\"first_value\",\"field\":\"val\",\"as\":\"topo\"},{\"op\":\"lag\",\"field\":\"val\",\"as\":\"ant\"}],\"sort\":[{\"field\":\"ord\"}],\"frame\":[null,null]},{\"calculate\":\"datum.val / datum.topo\",\"as\":\"pct_topo\"},{\"calculate\":\"datum.ant ? datum.val / datum.ant : 1\",\"as\":\"pct_ant\"},{\"calculate\":\"max(datum.pct_topo, 0.006)\",\"as\":\"w\"},{\"calculate\":\"format(datum.val, '',.0f'') + (datum.ord == 1 ? '''' : ''  ·  '' + format(datum.pct_ant, ''.1%'') + '' da etapa anterior'')\",\"as\":\"rot\"}],\"encoding\":{\"y\":{\"field\":\"etapa\",\"type\":\"ordinal\",\"sort\":{\"field\":\"ord\",\"op\":\"min\",\"order\":\"ascending\"},\"axis\":{\"title\":null,\"labelFontSize\":12,\"labelColor\":\"#DDF5EB\",\"labelPadding\":8}}},\"layer\":[{\"transform\":[{\"calculate\":\"1\",\"as\":\"one\"}],\"mark\":{\"type\":\"bar\",\"cornerRadius\":6,\"height\":{\"band\":0.62},\"color\":\"rgba(255,255,255,0.06)\"},\"encoding\":{\"x\":{\"field\":\"one\",\"type\":\"quantitative\",\"scale\":{\"domain\":[0,1]},\"axis\":null}}},{\"mark\":{\"type\":\"bar\",\"cornerRadius\":6,\"height\":{\"band\":0.62}},\"encoding\":{\"x\":{\"field\":\"w\",\"type\":\"quantitative\",\"scale\":{\"domain\":[0,1]},\"axis\":null},\"color\":{\"field\":\"ord\",\"type\":\"ordinal\",\"scale\":{\"range\":[\"#125F61\",\"#18B89F\",\"#DDF5EB\"]},\"legend\":null},\"tooltip\":[{\"field\":\"etapa\",\"title\":\"Etapa\"},{\"field\":\"val\",\"title\":\"Volume\",\"format\":\",.0f\"},{\"field\":\"pct_topo\",\"title\":\"% das sessões\",\"format\":\".2%\"},{\"field\":\"pct_ant\",\"title\":\"% da etapa anterior\",\"format\":\".1%\"}]}},{\"transform\":[{\"filter\":\"datum.pct_topo < 0.6\"}],\"mark\":{\"type\":\"text\",\"fontSize\":13,\"fontWeight\":600,\"align\":\"left\",\"dx\":10,\"color\":\"#E8F3F1\"},\"encoding\":{\"x\":{\"field\":\"w\",\"type\":\"quantitative\"},\"text\":{\"field\":\"rot\"}}},{\"transform\":[{\"filter\":\"datum.pct_topo >= 0.6\"}],\"mark\":{\"type\":\"text\",\"fontSize\":13,\"fontWeight\":600,\"align\":\"right\",\"dx\":-12,\"color\":\"#E8F3F1\"},\"encoding\":{\"x\":{\"field\":\"w\",\"type\":\"quantitative\"},\"text\":{\"field\":\"rot\"}}}]}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"view\":{\"stroke\":\"transparent\"},\"background\":\"transparent\",\"font\":\"Segoe UI\",\"padding\":4,\"axis\":{\"labelColor\":\"#9FC9C1\",\"titleColor\":\"#9FC9C1\",\"gridColor\":\"rgba(255,255,255,0.07)\",\"domainColor\":\"rgba(255,255,255,0.15)\",\"tickColor\":\"rgba(255,255,255,0.15)\",\"labelFontSize\":10,\"titleFontSize\":10,\"titleFontWeight\":\"normal\"},\"legend\":{\"labelColor\":\"#E8F3F1\",\"titleColor\":\"#9FC9C1\",\"orient\":\"top\",\"labelFontSize\":10,\"symbolSize\":80},\"text\":{\"color\":\"#E8F3F1\",\"fontSize\":10},\"locale\":{\"number\":{\"decimal\":\",\",\"thousands\":\".\",\"grouping\":[3],\"currency\":[\"R$ \",\"\"]}}}'"
+                }
+              }
+            },
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "enableHighlight": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Funil digital'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#DDF5EB'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI Semibold'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Add to cart fora do funil: na base ele é menor que o checkout (ver alerta)'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#9FC9C1'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

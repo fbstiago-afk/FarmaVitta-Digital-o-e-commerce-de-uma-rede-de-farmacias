@@ -1,0 +1,51 @@
+/// Dispositivos de acesso (4).
+table dDispositivo
+	lineageTag: 3927f6c4-72ca-520f-9bbe-2d8f7136762a
+
+	column id_dispositivo
+		dataType: string
+		isHidden
+		lineageTag: 059bafff-7412-5394-abee-e344bdb81557
+		summarizeBy: none
+		sourceColumn: id_dispositivo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dispositivo
+		dataType: string
+		lineageTag: 56c5bc4d-a93a-5f19-9083-cd56b98a91ad
+		summarizeBy: none
+		sourceColumn: nome
+		sortByColumn: 'Ordem Dispositivo'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Tipo Dispositivo'
+		dataType: string
+		lineageTag: 704bbc4d-1d8e-566c-9bbe-06d9ba64de0b
+		summarizeBy: none
+		sourceColumn: tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ordem Dispositivo'
+		dataType: int64
+		isHidden
+		lineageTag: 2cf00bf7-a3b5-55c6-b8d0-ba45e6188102
+		summarizeBy: none
+		sourceColumn: ordem
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dDispositivo = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\dim_dispositivo.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_dispositivo", type text}, {"nome", type text}, {"tipo", type text}, {"ordem", Int64.Type}}, "en-US"),
+				    Ultimo = Tipado,
+				    Final = Table.SelectColumns(Ultimo, {"id_dispositivo", "nome", "tipo", "ordem"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

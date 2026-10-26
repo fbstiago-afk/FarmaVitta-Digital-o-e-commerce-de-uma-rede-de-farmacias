@@ -1,0 +1,87 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "name": "dataset"
+  },
+  "width": "container",
+  "height": "container",
+  "transform": [
+    {
+      "filter": "datum.coorte_ord != null && datum.ret != null"
+    },
+    {
+      "calculate": "(floor(datum.mes_ord / 100) * 12 + datum.mes_ord % 100) - (floor(datum.coorte_ord / 100) * 12 + datum.coorte_ord % 100)",
+      "as": "m"
+    },
+    {
+      "filter": "datum.m >= 1 && datum.m <= 12"
+    }
+  ],
+  "mark": {
+    "type": "rect",
+    "cornerRadius": 2,
+    "stroke": "#071E23",
+    "strokeWidth": 1.5
+  },
+  "encoding": {
+    "x": {
+      "field": "m",
+      "type": "ordinal",
+      "axis": {
+        "title": "meses desde a 1ª compra digital",
+        "labelAngle": 0
+      }
+    },
+    "y": {
+      "field": "coorte",
+      "type": "ordinal",
+      "sort": {
+        "field": "coorte_ord",
+        "op": "min",
+        "order": "ascending"
+      },
+      "axis": {
+        "title": null
+      }
+    },
+    "color": {
+      "field": "ret",
+      "type": "quantitative",
+      "scale": {
+        "domainMin": 0,
+        "range": [
+          "#0E3138",
+          "#125F61",
+          "#18B89F",
+          "#DDF5EB"
+        ]
+      },
+      "legend": {
+        "title": "Retenção",
+        "format": ".0%",
+        "orient": "right",
+        "gradientLength": 160
+      }
+    },
+    "tooltip": [
+      {
+        "field": "coorte",
+        "title": "Coorte"
+      },
+      {
+        "field": "m",
+        "title": "Mês +"
+      },
+      {
+        "field": "ret",
+        "title": "Retenção",
+        "format": ".1%"
+      },
+      {
+        "field": "cli",
+        "title": "Clientes ativos",
+        "format": ",.0f"
+      }
+    ]
+  }
+}

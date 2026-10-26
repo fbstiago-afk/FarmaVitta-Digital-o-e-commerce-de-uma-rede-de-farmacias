@@ -1,0 +1,141 @@
+/// Extensão 1:1 das vendas digitais (frete, prazo, OTIF). NÃO contém receita: receita vem de fVendas. Cliente herdado do cupom no Power Query.
+table fPedidosDigitais
+	lineageTag: f01bec7a-f20f-5e22-8e83-ccba8fe25eb7
+
+	column id_venda
+		dataType: string
+		isHidden
+		lineageTag: 383bc144-8647-51d9-b41e-d8d45bfa2d04
+		summarizeBy: none
+		sourceColumn: id_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_venda
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		isHidden
+		lineageTag: c3219496-8b8f-56b6-aae0-e22bab7407aa
+		summarizeBy: none
+		sourceColumn: data_venda
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column id_loja
+		dataType: string
+		isHidden
+		lineageTag: 3d016dd9-33e8-5324-bd4e-aa8fc18e447f
+		summarizeBy: none
+		sourceColumn: id_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal
+		dataType: string
+		isHidden
+		lineageTag: eecd61d1-59e7-5d7a-87e0-ee1282a6c356
+		summarizeBy: none
+		sourceColumn: canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column frete_valor
+		dataType: double
+		isHidden
+		lineageTag: a96ce12f-9268-5098-bfe7-77259512de2e
+		summarizeBy: none
+		sourceColumn: frete_valor
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_prometido_dias
+		dataType: int64
+		isHidden
+		lineageTag: 2fc172d6-82f8-5b8f-8199-fc7d0e964906
+		summarizeBy: none
+		sourceColumn: prazo_prometido_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_real_dias
+		dataType: int64
+		isHidden
+		lineageTag: 790ab0e6-c9cc-55c0-b6e4-39ae81b1155c
+		summarizeBy: none
+		sourceColumn: prazo_real_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Status Entrega'
+		dataType: string
+		lineageTag: 65812ae8-5706-512d-93ec-502535b7887d
+		summarizeBy: none
+		sourceColumn: status_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column custo_fulfillment
+		dataType: double
+		isHidden
+		lineageTag: 01eea178-c1e7-5b20-87ab-d6933892c24c
+		summarizeBy: none
+		sourceColumn: custo_fulfillment
+
+		annotation SummarizationSetBy = Automatic
+
+	column otif
+		dataType: int64
+		isHidden
+		lineageTag: 18031204-dad3-5141-8802-28560b42e061
+		summarizeBy: none
+		sourceColumn: otif
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_cliente
+		dataType: string
+		isHidden
+		lineageTag: 7872c162-9402-5650-ac8d-ae84aaa156d6
+		summarizeBy: none
+		sourceColumn: id_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column atraso_dias
+		dataType: int64
+		isHidden
+		lineageTag: 82465154-12ce-5cdd-ab36-94fafa406d0a
+		summarizeBy: none
+		sourceColumn: atraso_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column frete_gratis
+		dataType: int64
+		isHidden
+		lineageTag: 04f17649-aac7-5504-9738-db40053a78c6
+		summarizeBy: none
+		sourceColumn: frete_gratis
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fPedidosDigitais = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\f_pedidos_digitais.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_venda", type text}, {"data_venda", type date}, {"id_loja", type text}, {"canal", type text}, {"frete_valor", type number}, {"prazo_prometido_dias", Int64.Type}, {"prazo_real_dias", Int64.Type}, {"status_entrega", type text}, {"custo_fulfillment", type number}, {"otif", Int64.Type}}, "en-US"),
+				    Cupom = Table.Buffer(Table.SelectColumns(fnCsv("01_Dados_Originais\base_original\f_vendas.csv"), {"id_venda", "id_cliente"})),
+				    J = Table.NestedJoin(Tipado, "id_venda", Cupom, "id_venda", "v", JoinKind.LeftOuter),
+				    E = Table.ExpandTableColumn(J, "v", {"id_cliente"}),
+				    Anon = Table.ReplaceValue(E, "", "NI", Replacer.ReplaceValue, {"id_cliente"}),
+				    Atraso = Table.AddColumn(Anon, "atraso_dias", each List.Max({0, [prazo_real_dias] - [prazo_prometido_dias]}), Int64.Type),
+				    Gratis = Table.AddColumn(Atraso, "frete_gratis", each if [frete_valor] = 0 then 1 else 0, Int64.Type),
+				    Ultimo = Gratis,
+				    Final = Table.SelectColumns(Ultimo, {"id_venda", "data_venda", "id_loja", "canal", "frete_valor", "prazo_prometido_dias", "prazo_real_dias", "status_entrega", "custo_fulfillment", "otif", "id_cliente", "atraso_dias", "frete_gratis"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

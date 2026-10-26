@@ -1,0 +1,2887 @@
+/// Tabela de medidas.
+table _Medidas
+	lineageTag: 6f308843-fba4-5e00-a7b2-ef424c857270
+
+	/// Soma do valor bruto dos cupons (f_vendas).
+	measure 'Receita Bruta' = SUM ( fVendas[valor_bruto] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base
+		lineageTag: ab85e346-84f8-5128-bec8-82bcfaacebfa
+
+	measure Descontos = SUM ( fVendas[valor_desconto] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base
+		lineageTag: 4ad242fe-f311-51e9-9f6f-5c0b046e2737
+
+	/// Receita líquida oficial da rede (f_vendas). Não somar com itens.
+	measure 'Receita Líquida' = SUM ( fVendas[valor_liquido] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base
+		lineageTag: 4a6bed16-3142-54a4-8036-74f6d92a9097
+
+	/// Custo da mercadoria vendida (f_vendas).
+	measure CMV = SUM ( fVendas[custo_mercadoria] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base
+		lineageTag: 24ebfd99-3874-539d-aae8-263c03d6c539
+
+	/// Número de cupons (vendas). id_venda é único (GATE A).
+	measure Cupons = COUNTROWS ( fVendas )
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 23c4a9f5-4e35-5f7e-9832-37d797fd0497
+
+	measure 'Unidades Vendidas' = SUM ( fItensVenda[quantidade] )
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 82fa3219-5589-5acf-8913-67c384ce34b5
+
+	measure 'Qtd Lojas' = COUNTROWS ( dLoja )
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: c74b5404-604b-5017-845f-c7c7d3cfa100
+
+	measure 'Clientes Cadastrados' = CALCULATE ( COUNTROWS ( dCliente ), dCliente[id_cliente] <> "NI" )
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 9f9fb5bf-2be8-5184-bb69-2d8ef2933ac0
+
+	/// Despesas modeladas (loja/mês). Em branco quando filtrado por produto, canal, cliente ou fornecedor.
+	measure Despesas = IF ( NOT [_Filtro Sem Despesa], SUM ( fDespesas[despesa_total] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base
+		lineageTag: 7f7d04d9-0283-5a31-8788-c04fe09c64f2
+
+	measure 'Meta Receita' = IF ( NOT [_Filtro Sem Despesa], SUM ( fMetas[meta_receita] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base
+		lineageTag: e9972b2f-ab40-5f7d-a850-916a84772356
+
+	measure 'Meta Lucro Bruto' = IF ( NOT [_Filtro Sem Despesa], SUM ( fMetas[meta_lucro_bruto] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base
+		lineageTag: 22363418-815c-5dbb-a89f-07ccb3d5f0fa
+
+	/// Verdadeiro quando há filtro em dimensão que não existe nas fatos de meta/despesa (evita números enganosos).
+	measure '_Filtro Sem Despesa' = ISFILTERED ( dProduto ) || ISFILTERED ( dCanal ) || ISFILTERED ( dCliente ) || ISFILTERED ( dFornecedor )
+		displayFolder: 99 Auditoria
+		isHidden
+		lineageTag: 5eb81bcf-19c4-5ea2-9d2f-cf668c9f5659
+
+	/// Último dia com venda na base (limita comparações com o ano anterior).
+	measure '_Data Base' = CALCULATE ( MAX ( fVendas[data_venda] ), REMOVEFILTERS () )
+		formatString: dd/MM/yyyy
+		displayFolder: 01 Tempo
+		isHidden
+		lineageTag: ffcc58ce-5001-533b-a529-1c25191a6dc9
+
+	/// Verdadeiro quando o mesmo período do ano anterior está inteiramente coberto pela base (≥ 01/10/2024).
+	measure '_Periodo Comparavel LY' =
+			VAR _ini = CALCULATE ( MIN ( fVendas[data_venda] ) )
+			RETURN NOT ISBLANK ( _ini ) && EDATE ( _ini, -12 ) >= DATE ( 2024, 10, 1 )
+		displayFolder: 01 Tempo
+		isHidden
+		lineageTag: e1bdd7e6-e543-5bac-adfe-245a7995e811
+
+	measure 'Receita Líquida LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Receita Líquida], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo
+		lineageTag: beca504c-3cb9-5b0e-a45a-488349736d17
+
+	measure 'Receita YoY %' = DIVIDE ( [Receita Líquida] - [Receita Líquida LY], [Receita Líquida LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo
+		lineageTag: eb01a9a7-5934-5b08-bf5b-140f1f52ee07
+
+	measure 'Lucro Bruto LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Lucro Bruto], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo
+		lineageTag: 681c9fb4-c36c-5221-918f-58894e8d2ea4
+
+	measure 'Lucro Bruto YoY %' = DIVIDE ( [Lucro Bruto] - [Lucro Bruto LY], [Lucro Bruto LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo
+		lineageTag: 4c88c12c-884a-58ae-a43d-d3dfbb99231e
+
+	measure 'Margem Bruta LY' = DIVIDE ( [Lucro Bruto LY], [Receita Líquida LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo
+		lineageTag: aa060292-de8b-50c4-a2d9-d7add73e0ed7
+
+	measure 'Margem Bruta Var pp' = IF ( NOT ISBLANK ( [Margem Bruta LY] ), ( [Margem Bruta %] - [Margem Bruta LY] ) * 100 )
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 01 Tempo
+		lineageTag: aef76124-a42f-5b89-b737-b1c7acdc365b
+
+	measure 'Cupons LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Cupons], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: #,0
+		displayFolder: 01 Tempo
+		lineageTag: 51d1b6b4-a5f2-5c50-b835-d80a815cafe4
+
+	measure 'Cupons YoY %' = DIVIDE ( [Cupons] - [Cupons LY], [Cupons LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo
+		lineageTag: 44918306-118c-566e-9631-f4726c1c08b7
+
+	measure 'Ticket Médio LY' = DIVIDE ( [Receita Líquida LY], [Cupons LY] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo
+		lineageTag: 7e0f1319-6526-5756-8c4b-03f3808cfd1c
+
+	measure 'Ticket Médio YoY %' = DIVIDE ( [Ticket Médio] - [Ticket Médio LY], [Ticket Médio LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo
+		lineageTag: dd0e3810-df23-5b60-8e15-e664b162e349
+
+	measure 'Resultado Op Simplificado LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Resultado Operacional Simplificado], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo
+		lineageTag: 97436462-807c-5132-8338-6acafea34bcc
+
+	measure 'Resultado Op Simplificado YoY %' = DIVIDE ( [Resultado Operacional Simplificado] - [Resultado Op Simplificado LY], ABS ( [Resultado Op Simplificado LY] ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo
+		lineageTag: 334abffc-0b44-5a72-bdf7-46840f416a79
+
+	measure 'Receita Mês Anterior' = CALCULATE ( [Receita Líquida], DATEADD ( dCalendario[Data], -1, MONTH ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo
+		lineageTag: 42f8d4e5-bc77-586a-a6b5-5cf4f725956b
+
+	measure 'Receita MoM %' = DIVIDE ( [Receita Líquida] - [Receita Mês Anterior], [Receita Mês Anterior] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo
+		lineageTag: 547b5620-69b8-5b03-af81-b128b3061e2b
+
+	measure 'Receita Acumulada Ano' = TOTALYTD ( [Receita Líquida], dCalendario[Data] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo
+		lineageTag: 8b8a4158-b862-5dc9-8c68-c2e50bc8aaac
+
+	measure 'Meses com Venda' = COUNTROWS ( FILTER ( VALUES ( dCalendario[AnoMes Num] ), CALCULATE ( NOT ISEMPTY ( fVendas ) ) ) )
+		formatString: #,0
+		displayFolder: 01 Tempo
+		lineageTag: 0ab2bd0a-7e39-5540-b70e-2791745877d9
+
+	measure 'Período Selecionado' =
+			VAR _i = CALCULATE ( MIN ( fVendas[data_venda] ) )
+			VAR _f = CALCULATE ( MAX ( fVendas[data_venda] ) )
+			RETURN IF ( ISBLANK ( _i ), "Sem vendas no período", FORMAT ( _i, "dd/mm/yyyy" ) & " a " & FORMAT ( _f, "dd/mm/yyyy" ) )
+		displayFolder: 01 Tempo
+		lineageTag: 706c9230-174e-52a2-8848-78e7d04fcdd5
+
+	/// Receita líquida − CMV (f_vendas).
+	measure 'Lucro Bruto' = [Receita Líquida] - [CMV]
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 02 Comercial
+		lineageTag: 6abd3226-da9b-5e04-8d33-291b2666b936
+
+	measure 'Margem Bruta %' = DIVIDE ( [Lucro Bruto], [Receita Líquida] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial
+		lineageTag: 69507fd6-4f51-5287-a1b5-a6c436cadf2c
+
+	measure 'Ticket Médio' = DIVIDE ( [Receita Líquida], [Cupons] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 02 Comercial
+		lineageTag: 7ea4d07d-3b87-5790-9c4c-665c7eb96780
+
+	/// Unidades por cupom (não confundir com SKUs distintos).
+	measure 'Itens por Cupom' = DIVIDE ( [Unidades Vendidas], [Cupons] )
+		formatString: #,0.00
+		displayFolder: 02 Comercial
+		lineageTag: 5e803496-f4a1-5da3-be41-6033399e951a
+
+	measure 'SKUs por Cupom' = DIVIDE ( SUM ( fVendas[qtd_itens_distintos] ), [Cupons] )
+		formatString: #,0.00
+		displayFolder: 02 Comercial
+		lineageTag: 83692f91-6475-5f7d-a6e7-fd6399911b2b
+
+	measure 'Desconto %' = DIVIDE ( [Descontos], [Receita Bruta] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial
+		lineageTag: 59d90431-c51f-5990-aed3-f03e9988120e
+
+	/// Receita líquida / meta. Em branco com filtro de produto/canal/cliente.
+	measure 'Atingimento Meta %' = DIVIDE ( [Receita Líquida], [Meta Receita] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial
+		lineageTag: 8004b3ce-6465-5f58-aa1d-cefd1f4f7040
+
+	measure 'Gap Meta' = IF ( NOT ISBLANK ( [Meta Receita] ), [Receita Líquida] - [Meta Receita] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 02 Comercial
+		lineageTag: 1175f9c2-2f1b-51e9-9a4e-03f030b7290d
+
+	measure 'Share Receita %' = DIVIDE ( [Receita Líquida], CALCULATE ( [Receita Líquida], ALLSELECTED () ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial
+		lineageTag: 8e8e8b83-9411-581d-a89e-e8760efbe1b7
+
+	measure 'Lojas na Meta' = COUNTROWS ( FILTER ( VALUES ( dLoja[id_loja] ), [Atingimento Meta %] >= 1 ) )
+		formatString: #,0
+		displayFolder: 02 Comercial
+		lineageTag: 465e6d40-062e-55ee-ac7b-835b6d40492b
+
+	measure 'Cupons Identificados' = CALCULATE ( [Cupons], fVendas[cliente_identificado] = TRUE () )
+		formatString: #,0
+		displayFolder: 03 Clientes
+		lineageTag: cfb550a2-58ec-59b4-bbca-228c8eec56a9
+
+	measure '% Cupons Identificados' = DIVIDE ( [Cupons Identificados], [Cupons] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Clientes
+		lineageTag: a6a2959b-f8de-56e4-a4de-ecb1f60b96ca
+
+	/// Clientes identificados com ao menos 1 cupom no período. Cupom anônimo não é cliente.
+	measure 'Clientes Ativos' = CALCULATE ( DISTINCTCOUNT ( fVendas[id_cliente] ), fVendas[cliente_identificado] = TRUE () )
+		formatString: #,0
+		displayFolder: 03 Clientes
+		lineageTag: 712aca7d-ef5b-5fdf-a618-910599d4e230
+
+	measure 'Clientes Ativos LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Clientes Ativos], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: #,0
+		displayFolder: 03 Clientes
+		lineageTag: 865bfd54-e774-542c-826d-3a5c42aa1484
+
+	measure 'Clientes Ativos YoY %' = DIVIDE ( [Clientes Ativos] - [Clientes Ativos LY], [Clientes Ativos LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Clientes
+		lineageTag: 58287f75-f87e-5ed3-8a18-3df273408ade
+
+	/// Primeira compra observada na base (desde 01/10/2024): nos primeiros meses quase todos aparecem como novos.
+	measure 'Clientes Novos' = CALCULATE ( DISTINCTCOUNT ( fVendas[id_cliente] ), fVendas[primeira_compra] = TRUE () )
+		formatString: #,0
+		displayFolder: 03 Clientes
+		lineageTag: 6e0fe3dd-bea6-5726-a3f0-cf235e291c3c
+
+	measure 'Clientes Recorrentes' = [Clientes Ativos] - [Clientes Novos]
+		formatString: #,0
+		displayFolder: 03 Clientes
+		lineageTag: 55082281-d199-592d-b5c6-665408e1d601
+
+	measure '% Clientes Novos' = DIVIDE ( [Clientes Novos], [Clientes Ativos] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Clientes
+		lineageTag: ab49a6ea-89ca-50a1-8dae-4054305fe8e8
+
+	/// Cupons por cliente identificado no período.
+	measure 'Frequência Média' = DIVIDE ( [Cupons Identificados], [Clientes Ativos] )
+		formatString: #,0.00
+		displayFolder: 03 Clientes
+		lineageTag: fc90363b-f94c-57fc-9ea2-4b116f5990a9
+
+	/// % de clientes ativos com 2+ cupons no período.
+	measure 'Taxa de Recompra %' =
+			VAR _rec = COUNTROWS ( FILTER ( CALCULATETABLE ( VALUES ( fVendas[id_cliente] ), fVendas[cliente_identificado] = TRUE () ), CALCULATE ( COUNTROWS ( fVendas ) ) >= 2 ) )
+			RETURN DIVIDE ( _rec, [Clientes Ativos] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Clientes
+		lineageTag: dcb1915d-774d-5c71-8fd7-b9297cd9de7c
+
+	measure 'Ticket Médio Identificado' = CALCULATE ( [Ticket Médio], fVendas[cliente_identificado] = TRUE () )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 03 Clientes
+		lineageTag: fbbc7043-b917-5bd5-afaa-fb85362873a2
+
+	measure 'Ticket Médio Anônimo' = CALCULATE ( [Ticket Médio], fVendas[cliente_identificado] = FALSE () )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 03 Clientes
+		lineageTag: 32988428-9372-5196-8afa-8f6868737655
+
+	measure 'Receita por Cliente' = DIVIDE ( CALCULATE ( [Receita Líquida], fVendas[cliente_identificado] = TRUE () ), [Clientes Ativos] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 03 Clientes
+		lineageTag: e7983aa0-2b14-5cc4-98ab-a1e6e7b97ee2
+
+	/// Receita líquida na granularidade de item (para produto/categoria).
+	measure 'Receita Líquida Itens' = SUM ( fItensVenda[valor_liquido] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 Produtos
+		lineageTag: d69701cc-1771-5884-ae05-178be1e4ac09
+
+	measure 'CMV Itens' = SUM ( fItensVenda[custo_total] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 Produtos
+		lineageTag: 2de7884a-2d99-52ef-b6c8-f95aac436eb3
+
+	measure 'Descontos Itens' = SUM ( fItensVenda[valor_desconto] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 Produtos
+		lineageTag: aee3124b-d924-56ff-9a2c-f71a25d05f0d
+
+	measure 'Lucro Bruto Itens' = [Receita Líquida Itens] - [CMV Itens]
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 Produtos
+		lineageTag: 9b402a06-b7d7-5049-9379-cf32a234b3da
+
+	measure 'Margem Bruta Itens %' = DIVIDE ( [Lucro Bruto Itens], [Receita Líquida Itens] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: 8dca682f-0fc3-5bae-ac9f-f54e928a58da
+
+	measure 'Desconto Itens %' = DIVIDE ( [Descontos Itens], [Receita Líquida Itens] + [Descontos Itens] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: 88205316-6ac8-529c-9361-ac10df345a24
+
+	measure 'SKUs Vendidos' = DISTINCTCOUNT ( fItensVenda[id_produto] )
+		formatString: #,0
+		displayFolder: 04 Produtos
+		lineageTag: d7ba663a-0b00-5f37-a69b-c96ef70a8944
+
+	measure 'SKUs no Catálogo' = COUNTROWS ( dProduto )
+		formatString: #,0
+		displayFolder: 04 Produtos
+		lineageTag: f4c0ed8b-46b6-55db-b500-3a3f7d568324
+
+	measure '% SKUs com Venda' = DIVIDE ( [SKUs Vendidos], [SKUs no Catálogo] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: 0f84b627-8f1a-5106-bac1-ff4e5c0636aa
+
+	measure 'Preço Médio Unitário' = DIVIDE ( [Receita Líquida Itens], [Unidades Vendidas] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 Produtos
+		lineageTag: 8ee4f117-703a-5c9b-a1ce-c7549b8b4fe6
+
+	measure 'Share Receita Itens %' = DIVIDE ( [Receita Líquida Itens], CALCULATE ( [Receita Líquida Itens], ALLSELECTED ( dProduto ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: a38b04d3-2d82-5fad-96b9-952fcd6d67d8
+
+	measure '% SKUs Vendidos' = DIVIDE ( [SKUs Vendidos], CALCULATE ( [SKUs Vendidos], ALLSELECTED ( dProduto ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: ee930ff5-ef14-528c-8d09-e368ff3a3a73
+
+	measure 'Contribuição Lucro %' = DIVIDE ( [Lucro Bruto Itens], CALCULATE ( [Lucro Bruto Itens], ALLSELECTED ( dProduto ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: 5fe4f45e-ec7a-57d8-9948-b51954483d25
+
+	measure 'Receita Itens LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Receita Líquida Itens], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 Produtos
+		lineageTag: 88a194d8-4c27-5b09-a9d4-a18266cfafa7
+
+	measure 'Receita Itens YoY %' = DIVIDE ( [Receita Líquida Itens] - [Receita Itens LY], [Receita Itens LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: 867d729c-4a7c-5d83-bac9-6eafd9fb3ce2
+
+	measure 'Receita Itens Var LY' = IF ( NOT ISBLANK ( [Receita Itens LY] ), [Receita Líquida Itens] - [Receita Itens LY] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 Produtos
+		lineageTag: 268c4471-1236-5b5a-bab6-77e98d0518e1
+
+	measure 'Margem Itens LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Margem Bruta Itens %], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: 52ae1d02-6df3-5aff-9b70-fb056a8cd5f4
+
+	measure 'Margem Itens Var pp' = IF ( NOT ISBLANK ( [Margem Itens LY] ), ( [Margem Bruta Itens %] - [Margem Itens LY] ) * 100 )
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 04 Produtos
+		lineageTag: 84fce524-b4a7-5a0f-91f9-e5ce55948fec
+
+	measure 'Ranking SKU' = IF ( NOT ISBLANK ( [Receita Líquida Itens] ), RANKX ( ALLSELECTED ( dProduto ), [Receita Líquida Itens],, DESC, DENSE ) )
+		formatString: #,0
+		displayFolder: 04 Produtos
+		lineageTag: cddba88b-bc68-5f67-9be0-6b8934b33957
+
+	/// Pareto dinâmico por SKU dentro da seleção. Custoso: usar em tabelas, não em gráficos com 5.000 pontos.
+	measure 'Receita Acumulada % (Pareto)' =
+			VAR _r = [Receita Líquida Itens]
+			VAR _t = ADDCOLUMNS ( ALLSELECTED ( dProduto[id_produto] ), "@r", [Receita Líquida Itens] )
+			VAR _acc = SUMX ( FILTER ( _t, [@r] >= _r ), [@r] )
+			RETURN IF ( NOT ISBLANK ( _r ), DIVIDE ( _acc, SUMX ( _t, [@r] ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 Produtos
+		lineageTag: 65eecabe-0a56-5cfc-8dde-741258cba14a
+
+	measure Pessoal = IF ( NOT [_Filtro Sem Despesa], SUM ( fDespesas[pessoal] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro
+		lineageTag: 0f8e4579-1dbc-57c5-998c-01fa2071bfd4
+
+	measure Aluguel = IF ( NOT [_Filtro Sem Despesa], SUM ( fDespesas[aluguel] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro
+		lineageTag: 08938c9f-2148-5070-b197-cfd1b6865729
+
+	measure 'Despesas Operacionais' = IF ( NOT [_Filtro Sem Despesa], SUM ( fDespesas[operacionais] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro
+		lineageTag: cb5c9f04-f026-526f-8384-9dce320ad996
+
+	measure 'Marketing e Canais' = IF ( NOT [_Filtro Sem Despesa], SUM ( fDespesas[marketing_canais] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro
+		lineageTag: a0be67e7-5c0c-55bd-bc44-85a7bcc51961
+
+	/// Lucro bruto − despesas modeladas. NÃO é EBITDA, lucro líquido nem fluxo de caixa.
+	measure 'Resultado Operacional Simplificado' = IF ( NOT [_Filtro Sem Despesa], [Lucro Bruto] - [Despesas] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro
+		lineageTag: 32b5cddb-0a51-5df4-8389-fe4ca3045821
+
+	measure 'Margem Operacional Simplificada %' = DIVIDE ( [Resultado Operacional Simplificado], [Receita Líquida] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 07 Financeiro
+		lineageTag: 5911d17a-33b5-52f6-8441-d05e0dff94a6
+
+	measure 'Despesas % Receita' = DIVIDE ( [Despesas], [Receita Líquida] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 07 Financeiro
+		lineageTag: 580ded9e-37b9-56c4-925d-fbff947c38af
+
+	measure 'Atingimento Lucro Bruto %' = DIVIDE ( [Lucro Bruto], [Meta Lucro Bruto] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 07 Financeiro
+		lineageTag: 454354a3-b160-5a6a-bc42-52a825364c6a
+
+	measure 'Receita Real (Série)' = IF ( MIN ( dCalendario[Data] ) <= DATE(2026, 9, 30), [Receita Líquida] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 08 Forecast
+		lineageTag: b79de42b-30f1-519e-a85d-bf6f703b6ddc
+
+	measure 'CMV % Últimos 12m' = CALCULATE ( DIVIDE ( [CMV], [Receita Líquida] ), DATESBETWEEN ( dCalendario[Data], DATE ( 2025, 10, 1 ), DATE ( 2026, 9, 30 ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 08 Forecast
+		lineageTag: 7921e7b9-30c1-5ac4-83d9-961e07f2e816
+
+	measure 'Txt Receita' =
+			VAR _v = [Receita YoY %]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 218bc4a6-5f72-5a3c-a335-b6df95069d74
+
+	measure 'Cor Receita' =
+			VAR _v = [Receita YoY %]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 55d92281-a670-53fc-9545-9e4e54a4649c
+
+	measure 'Txt Lucro' =
+			VAR _v = [Lucro Bruto YoY %]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: fda3396c-58f8-5950-8f6e-c97164b429aa
+
+	measure 'Cor Lucro' =
+			VAR _v = [Lucro Bruto YoY %]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 37c35557-474b-5307-8502-ca19eebbba27
+
+	measure 'Txt Margem' =
+			VAR _v = [Margem Bruta Var pp]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0", "pt-BR" ) & " p.p." & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 3c5be83a-61fb-5e9f-b7ee-f4c9e1254ae7
+
+	measure 'Cor Margem' =
+			VAR _v = [Margem Bruta Var pp]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 2a5a57e0-a776-56c3-8937-4b539893f7e8
+
+	measure 'Txt Ticket' =
+			VAR _v = [Ticket Médio YoY %]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 10f8e166-11a6-586c-a61f-e7e314dab0db
+
+	measure 'Cor Ticket' =
+			VAR _v = [Ticket Médio YoY %]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 7616ab71-bf8c-52f2-b5b9-579b6134029d
+
+	measure 'Txt Cupons' =
+			VAR _v = [Cupons YoY %]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 81cbda31-4c12-506a-9117-904278526150
+
+	measure 'Cor Cupons' =
+			VAR _v = [Cupons YoY %]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 44d6e05b-7aca-5f67-a3ad-4b4d19919ae8
+
+	measure 'Txt Clientes' =
+			VAR _v = [Clientes Ativos YoY %]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: ba2c6ea2-e890-5b00-906e-2faa0f2144ab
+
+	measure 'Cor Clientes' =
+			VAR _v = [Clientes Ativos YoY %]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: d8cdf74a-b288-5c30-9e54-8cbc23da1f5e
+
+	measure 'Txt ROS' =
+			VAR _v = [Resultado Op Simplificado YoY %]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 1b427946-2b4d-5283-8bc9-48f8518beb35
+
+	measure 'Cor ROS' =
+			VAR _v = [Resultado Op Simplificado YoY %]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 7c5da8d0-74d7-59d6-a8f6-f0e662af293d
+
+	measure 'Txt Receita Itens' =
+			VAR _v = [Receita Itens YoY %]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: a199ae68-1786-50e7-9d31-234f43893373
+
+	measure 'Cor Receita Itens' =
+			VAR _v = [Receita Itens YoY %]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: c006ef59-53c2-5418-b00b-f89f1a0fac89
+
+	measure 'Txt Margem Itens' =
+			VAR _v = [Margem Itens Var pp]
+			RETURN IF ( ISBLANK ( _v ), "sem base comparável no ano anterior",
+			    IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0", "pt-BR" ) & " p.p." & " vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: d80ed223-1ed2-540f-b7d6-8c95486620d8
+
+	measure 'Cor Margem Itens' =
+			VAR _v = [Margem Itens Var pp]
+			RETURN IF ( ISBLANK ( _v ), "#71858A", IF ( _v >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 00bd8818-b9da-594a-aeba-545abed1f988
+
+	measure 'Txt Meta' =
+			VAR _g = [Gap Meta]
+			RETURN IF ( ISBLANK ( _g ), "meta indisponível p/ este filtro", IF ( _g >= 0, "▲ R$ ", "▼ R$ " ) & FORMAT ( ABS ( _g ) / 1000, "#,0", "pt-BR" ) & " mil vs meta" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 13381ca4-31b7-5a0c-929d-2ecc3d68709e
+
+	measure 'Cor Meta' = IF ( ISBLANK ( [Gap Meta] ), "#71858A", IF ( [Gap Meta] >= 0, "#0E8F7B", "#A34F39" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 71d2dd86-b7d5-53eb-8956-8db5f9ff18cf
+
+	measure 'Txt Margem Op' = IF ( ISBLANK ( [Margem Operacional Simplificada %] ), "indisponível p/ este filtro", "margem op. " & FORMAT ( [Margem Operacional Simplificada %], "0.0%", "pt-BR" ) & " · não é EBITDA" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 95aa90e8-460a-5494-95d0-5b5890fea6e6
+
+	measure 'Txt Novos' = FORMAT ( [% Clientes Novos], "0.0%", "pt-BR" ) & " dos ativos (1ª compra observada)"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 1b07002a-7935-5566-adbb-e3df8e7960ed
+
+	measure 'Txt SKUs' = FORMAT ( [% SKUs com Venda], "0.0%", "pt-BR" ) & " do catálogo filtrado"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 4d9eab2d-f3c2-5aa9-bcf8-1e0cb77c9daa
+
+	measure 'Txt Período' = "Período: " & [Período Selecionado]
+		displayFolder: 10 UI & Formatação
+		lineageTag: 65887dce-762a-574e-be14-57dc09b7bd94
+
+	measure 'Txt Neutro' = "#71858A"
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: f2e300d7-d722-5939-9f6e-c14ca765e390
+
+	/// Fato derivado dos filtros. Não atribui causa.
+	measure 'Narrativa Executiva' =
+			VAR _rec = [Receita Líquida]
+			VAR _yoy = [Receita YoY %]
+			VAR _mg = [Margem Bruta %]
+			VAR _pp = [Margem Bruta Var pp]
+			VAR _at = [Atingimento Meta %]
+			VAR _t = ADDCOLUMNS ( VALUES ( dLoja[Loja Curta] ), "@d", [Receita Líquida] - [Receita Líquida LY] )
+			VAR _top = TOPN ( 1, _t, [@d], DESC )
+			VAR _loja = MAXX ( _top, dLoja[Loja Curta] )
+			VAR _dl = MAXX ( _top, [@d] )
+			VAR _f1 = "Receita líquida de R$ " & FORMAT ( _rec / 1000000, "#,0.00", "pt-BR" ) & " mi"
+			    & IF ( ISBLANK ( _yoy ), " (sem período comparável completo no ano anterior).",
+			        ", " & IF ( _yoy >= 0, "alta", "queda" ) & " de " & FORMAT ( ABS ( _yoy ), "0.0%", "pt-BR" ) & " vs mesmo período do ano anterior." )
+			VAR _f2 = IF ( NOT ISBLANK ( _yoy ) && COUNTROWS ( _t ) > 1,
+			    " Maior contribuição: " & _loja & " (" & IF ( _dl >= 0, "+", "−" ) & "R$ " & FORMAT ( ABS ( _dl ) / 1000, "#,0", "pt-BR" ) & " mil).", "" )
+			VAR _f3 = " Margem bruta de " & FORMAT ( _mg, "0.0%", "pt-BR" )
+			    & IF ( ISBLANK ( _pp ), "", " (" & FORMAT ( _pp, "+0.0;-0.0", "pt-BR" ) & " p.p.)" )
+			    & IF ( ISBLANK ( _at ), ".", "; meta de receita " & FORMAT ( _at, "0%", "pt-BR" ) & " atingida." )
+			RETURN IF ( ISBLANK ( _rec ), "Sem vendas para os filtros selecionados.", _f1 & _f2 & _f3 )
+		displayFolder: 09 Narrativas
+		lineageTag: b47612f0-0c61-586f-956f-7ebc2a9d50fa
+
+	measure 'Narrativa Clientes' =
+			VAR _id = [% Cupons Identificados]
+			VAR _fr = [Frequência Média]
+			VAR _ti = [Ticket Médio Identificado]
+			VAR _ta = [Ticket Médio Anônimo]
+			VAR _rc = [Taxa de Recompra %]
+			RETURN IF ( ISBLANK ( [Cupons] ), "Sem vendas para os filtros selecionados.",
+			    FORMAT ( _id, "0%", "pt-BR" ) & " dos cupons têm cliente identificado; cada cliente ativo comprou em média " & FORMAT ( _fr, "0.0", "pt-BR" )
+			    & " vezes e " & FORMAT ( _rc, "0%", "pt-BR" ) & " recompraram no período."
+			    & IF ( NOT ISBLANK ( _ta ), " Ticket identificado R$ " & FORMAT ( _ti, "#,0.00", "pt-BR" ) & " vs anônimo R$ " & FORMAT ( _ta, "#,0.00", "pt-BR" ) & ".", "" )
+			    & " Hipótese a testar: ampliar identificação no balcão." )
+		displayFolder: 09 Narrativas
+		lineageTag: e878ab7b-a8d0-5262-aad8-8fb5dba8c8f7
+
+	measure 'Narrativa Produtos' =
+			VAR _c = ADDCOLUMNS ( VALUES ( dProduto[Categoria] ), "@r", [Receita Líquida Itens], "@pp", [Margem Itens Var pp] )
+			VAR _maior = TOPN ( 1, _c, [@r], DESC )
+			VAR _pior = TOPN ( 1, FILTER ( _c, NOT ISBLANK ( [@pp] ) ), [@pp], ASC )
+			VAR _f1 = MAXX ( _maior, dProduto[Categoria] ) & " lidera com " & FORMAT ( DIVIDE ( MAXX ( _maior, [@r] ), [Receita Líquida Itens] ), "0%", "pt-BR" ) & " da receita de itens; margem bruta geral de " & FORMAT ( [Margem Bruta Itens %], "0.0%", "pt-BR" ) & "."
+			VAR _f2 = IF ( COUNTROWS ( _pior ) = 1 && MAXX ( _pior, [@pp] ) < 0, " Maior perda de margem: " & MAXX ( _pior, dProduto[Categoria] ) & " (" & FORMAT ( MAXX ( _pior, [@pp] ), "+0.0;-0.0", "pt-BR" ) & " p.p.) — investigar desconto e mix.", "" )
+			RETURN IF ( ISBLANK ( [Receita Líquida Itens] ), "Sem vendas para os filtros selecionados.", _f1 & _f2 )
+		displayFolder: 09 Narrativas
+		lineageTag: 558ee563-fe01-5639-a33f-23f6c65582ac
+
+	measure 'Narrativa Financeiro' =
+			VAR _ros = [Resultado Operacional Simplificado]
+			VAR _pes = DIVIDE ( [Pessoal], [Despesas] )
+			RETURN IF ( ISBLANK ( _ros ), "Resultado indisponível para filtros de produto, canal, cliente ou fornecedor (despesas são por loja/mês).",
+			    "Resultado operacional simplificado de R$ " & FORMAT ( _ros / 1000000, "#,0.00", "pt-BR" ) & " mi (margem " & FORMAT ( [Margem Operacional Simplificada %], "0.0%", "pt-BR" )
+			    & "). Pessoal é " & FORMAT ( _pes, "0%", "pt-BR" ) & " das despesas modeladas. Indicador gerencial: não é EBITDA nem lucro líquido." )
+		displayFolder: 09 Narrativas
+		lineageTag: 0a47fe22-21aa-57a7-9e05-a98b993d3932
+
+	/// Deve ser 0 com filtros de loja/data/canal/cliente.
+	measure 'Check Receita Cupom vs Itens' = [Receita Líquida] - [Receita Líquida Itens]
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: 1503a95d-539d-540e-a2c4-b68a4c96cbaf
+
+	/// Deve ser 0 (RESUMO_BASE.json).
+	measure 'Check Receita Referência' = CALCULATE ( [Receita Líquida], REMOVEFILTERS () ) - 35060712
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: 735ff152-d35d-5618-9acd-78b397be3808
+
+	measure 'Check CMV Referência' = CALCULATE ( [CMV], REMOVEFILTERS () ) - 21252002.94
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: 4cc38b5e-28cd-5106-89a9-15573cc17e6f
+
+	measure 'Cor Atingimento' = VAR _a = [Atingimento Meta %] RETURN IF ( ISBLANK ( _a ), "#9FC9C1", IF ( _a >= 1, "#18B89F", IF ( _a >= 0.95, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 1b99fd80-92e6-529d-bd1b-aae20245113f
+
+	measure 'Cor Margem Op' = VAR _p = [Margem Operacional Simplificada %] RETURN IF ( ISBLANK ( _p ), "#9FC9C1", IF ( _p >= 0.2, "#18B89F", IF ( _p >= 0.1, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: de130d20-0ce3-5c80-a03b-34dc496d63d4
+
+	measure 'Txt Atingimento' = [Txt Meta]
+		displayFolder: 10 UI & Formatação
+		lineageTag: f2fd9153-106b-5845-926e-5f072a450ae1
+
+	measure 'Txt Pontualidade Meta' = "referência saudável ≥ 90%"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 6e6f9b6f-4bcb-5584-8d7e-89e7c8434b78
+
+	measure 'Txt WAPE' = "erro histórico · rolling-origin"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 79c7eb78-5feb-5413-a464-1659043035f0
+
+	measure 'Txt ROS Margem' = "margem " & FORMAT ( [Margem Operacional Simplificada %], "0.0%", "pt-BR" ) & " · não é EBITDA"
+		displayFolder: 10 UI & Formatação
+		lineageTag: d4e1d315-dfac-5c9b-b606-e7b04984b767
+
+	/// Destaca o mês de maior receita na seleção (Deneb).
+	measure 'Cor Destaque Receita Mes' =
+			VAR _mx = CALCULATE ( MAXX ( VALUES ( dCalendario[AnoMes Num] ), [Receita Líquida] ), ALLSELECTED ( dCalendario ) )
+			RETURN IF ( NOT ISBLANK ( [Receita Líquida] ), IF ( [Receita Líquida] = _mx, "#18B89F", "#2E7F78" ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: ffe7ec4b-4ce2-592a-b77c-582332977fc5
+
+	/// Barra SVG para coluna de tabela (categoria de dados ImageUrl).
+	measure 'SVG Barra Receita Categoria' =
+			VAR _v = [Receita Líquida Itens]
+			VAR _mx = CALCULATE ( MAXX ( ALLSELECTED ( dProduto[Categoria] ), [Receita Líquida Itens] ), ALLSELECTED ( dProduto[Categoria] ) )
+			VAR _w = IF ( _mx > 0, MAX ( 2, DIVIDE ( _v, _mx ) * 116 ), 0 )
+			RETURN IF ( NOT ISBLANK ( _v ),
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18'><rect x='0' y='5' width='120' height='8' rx='4' fill='%23FFFFFF' fill-opacity='0.08'/><rect x='0' y='5' width='" & FORMAT ( _w, "0", "en-US" ) & "' height='8' rx='4' fill='%2318B89F'/></svg>" )
+		dataCategory: ImageUrl
+		displayFolder: 11 SVG & HTML
+		lineageTag: f40c9c79-1b2a-51bd-8fdf-440468fd8b80
+
+	/// Barra SVG para coluna de tabela (categoria de dados ImageUrl).
+	measure 'SVG Barra Receita SKU' =
+			VAR _v = [Receita Líquida Itens]
+			VAR _mx = CALCULATE ( MAXX ( ALLSELECTED ( dProduto[Produto] ), [Receita Líquida Itens] ), ALLSELECTED ( dProduto[Produto] ) )
+			VAR _w = IF ( _mx > 0, MAX ( 2, DIVIDE ( _v, _mx ) * 116 ), 0 )
+			RETURN IF ( NOT ISBLANK ( _v ),
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18'><rect x='0' y='5' width='120' height='8' rx='4' fill='%23FFFFFF' fill-opacity='0.08'/><rect x='0' y='5' width='" & FORMAT ( _w, "0", "en-US" ) & "' height='8' rx='4' fill='%2318B89F'/></svg>" )
+		dataCategory: ImageUrl
+		displayFolder: 11 SVG & HTML
+		lineageTag: 91180a45-1f88-5c46-b246-d0024eebb50c
+
+	/// Receita líquida (f_vendas) dos canais Site, Aplicativo e Delivery. Nunca vem de f_pedidos_digitais.
+	measure 'Receita Digital' = CALCULATE ( [Receita Líquida], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base Digital
+		lineageTag: 1b0dfcd1-615f-5499-97ee-185588a20084
+
+	measure 'CMV Digital' = CALCULATE ( [CMV], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base Digital
+		lineageTag: 61fa0293-00e4-5b27-a1de-def039726a29
+
+	measure 'Descontos Digitais' = CALCULATE ( [Descontos], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base Digital
+		lineageTag: 5fa6681d-2334-5c35-90e6-693a3310c997
+
+	measure 'Receita Bruta Digital' = CALCULATE ( [Receita Bruta], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base Digital
+		lineageTag: 871279f8-1ae5-5a1e-9e99-2088a1d2a3f7
+
+	/// Cupons dos canais digitais (f_vendas). = linhas de f_pedidos_digitais (GATE A).
+	measure 'Pedidos Digitais' = CALCULATE ( [Cupons], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: #,0
+		displayFolder: 00 Base Digital
+		lineageTag: d2bb15ae-1f7d-5e41-a2d5-9c164589cddf
+
+	measure 'Unidades Digitais' = CALCULATE ( [Unidades Vendidas], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: #,0
+		displayFolder: 00 Base Digital
+		lineageTag: 9b6eef03-bc1c-5996-af90-6af16813a327
+
+	/// Denominador do share digital: ignora o filtro de canal.
+	measure 'Receita Rede (todos os canais)' = CALCULATE ( [Receita Líquida], REMOVEFILTERS ( dCanal ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 00 Base Digital
+		lineageTag: 34948363-b50b-5068-a483-57c7eeb1b024
+
+	/// [Receita Digital] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'Receita Digital LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Receita Digital], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo Digital
+		lineageTag: bfd38072-733f-5151-b61e-9aed5d36c44e
+
+	measure 'Receita Digital YoY %' = DIVIDE ( [Receita Digital] - [Receita Digital LY], [Receita Digital LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: 9ba5cafa-af6e-5dbb-a7c1-fe25bc236026
+
+	/// [Lucro Bruto Digital] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'Lucro Bruto Digital LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Lucro Bruto Digital], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo Digital
+		lineageTag: 7fd67960-63b9-52fd-8ae4-d5adef9ec911
+
+	measure 'Lucro Bruto Digital YoY %' = DIVIDE ( [Lucro Bruto Digital] - [Lucro Bruto Digital LY], [Lucro Bruto Digital LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: c20cf1f3-6345-52df-9e90-b507da3cef20
+
+	measure 'Margem Digital LY' = DIVIDE ( [Lucro Bruto Digital LY], [Receita Digital LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: fee9835d-f5b2-50f0-a241-744c321d4a5b
+
+	measure 'Margem Digital Var pp' = IF ( NOT ISBLANK ( [Margem Digital LY] ), ( [Margem Bruta Digital %] - [Margem Digital LY] ) * 100 )
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 01 Tempo Digital
+		lineageTag: fd45fa4f-f42d-53a8-9a8b-ad8a7da9c95e
+
+	/// [Pedidos Digitais] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'Pedidos Digitais LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Pedidos Digitais], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: #,0
+		displayFolder: 01 Tempo Digital
+		lineageTag: f6a06ad1-88c4-550e-81ea-356eb01cd80c
+
+	measure 'Pedidos Digitais YoY %' = DIVIDE ( [Pedidos Digitais] - [Pedidos Digitais LY], [Pedidos Digitais LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: 2242d96e-071b-5e05-94a2-33440cff37bf
+
+	measure 'Ticket Digital LY' = DIVIDE ( [Receita Digital LY], [Pedidos Digitais LY] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo Digital
+		lineageTag: 6eef39dd-32b9-5648-ab86-62f13c02109c
+
+	measure 'Ticket Digital YoY %' = DIVIDE ( [Ticket Médio Digital] - [Ticket Digital LY], [Ticket Digital LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: dfe42298-151a-5eec-b4aa-33497c537d67
+
+	measure 'Share Digital LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Share Digital %], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: c11c8bf3-8e06-53f9-acb9-fc6bdd46d0eb
+
+	measure 'Share Digital Var pp' = IF ( NOT ISBLANK ( [Share Digital LY] ), ( [Share Digital %] - [Share Digital LY] ) * 100 )
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 01 Tempo Digital
+		lineageTag: 220997fb-1d53-58c9-969c-5065dbc57458
+
+	/// [Sessões] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'Sessões LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Sessões], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: #,0
+		displayFolder: 01 Tempo Digital
+		lineageTag: 9544f479-8ef3-5034-9c91-046c19a100be
+
+	measure 'Sessões YoY %' = DIVIDE ( [Sessões] - [Sessões LY], [Sessões LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: 757703db-b8a0-54bb-8f31-fe29907ba72d
+
+	/// [Taxa Conversão %] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'Conversão LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Taxa Conversão %], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: 6dc306c0-426c-548b-bc21-be028fb64612
+
+	measure 'Conversão Var pp' = IF ( NOT ISBLANK ( [Conversão LY] ), ( [Taxa Conversão %] - [Conversão LY] ) * 100 )
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 01 Tempo Digital
+		lineageTag: fb515791-4c80-5f51-b2ef-9e3067d038dd
+
+	/// [NPS] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'NPS LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [NPS], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 01 Tempo Digital
+		lineageTag: 5ea86449-d9b7-51d1-b216-91fbad2bcdc7
+
+	/// Variação do NPS em pontos.
+	measure 'NPS Var' = IF ( NOT ISBLANK ( [NPS LY] ), [NPS] - [NPS LY] )
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 01 Tempo Digital
+		lineageTag: 1c0768f6-b868-5e58-b25a-516abb78d668
+
+	/// [OTIF %] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'OTIF LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [OTIF %], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: bcf99c4c-1fdf-508a-9e0f-9d5e510697c3
+
+	measure 'OTIF Var pp' = IF ( NOT ISBLANK ( [OTIF LY] ), ( [OTIF %] - [OTIF LY] ) * 100 )
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 01 Tempo Digital
+		lineageTag: 29226977-3d99-5b96-834c-bbf321862c65
+
+	/// [Clientes Digitais] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'Clientes Digitais LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Clientes Digitais], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: #,0
+		displayFolder: 01 Tempo Digital
+		lineageTag: 4c1de458-16c6-51a2-8ddc-ead28683ccba
+
+	measure 'Clientes Digitais YoY %' = DIVIDE ( [Clientes Digitais] - [Clientes Digitais LY], [Clientes Digitais LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: 600e2c54-8c2b-5dc1-a66d-f0aa5bc9448d
+
+	measure 'Receita Digital Mês Anterior' = CALCULATE ( [Receita Digital], DATEADD ( dCalendario[Data], -1, MONTH ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo Digital
+		lineageTag: 8c9c48c3-4628-5df6-88bc-07c1d9915bbb
+
+	measure 'Receita Digital MoM %' = DIVIDE ( [Receita Digital] - [Receita Digital Mês Anterior], [Receita Digital Mês Anterior] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: aaf8a6a0-5f9a-57d9-819d-3e7979136e85
+
+	measure 'Receita Digital YTD' = TOTALYTD ( [Receita Digital], dCalendario[Data] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo Digital
+		lineageTag: b3dcd0dc-0633-5985-99a2-cff553be01ef
+
+	measure 'Lucro Bruto Digital' = [Receita Digital] - [CMV Digital]
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 02 Comercial Digital
+		lineageTag: 3be0cd52-1bc7-5b96-8922-703505bb966f
+
+	measure 'Margem Bruta Digital %' = DIVIDE ( [Lucro Bruto Digital], [Receita Digital] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial Digital
+		lineageTag: 4b658e7b-1c8b-5183-a309-f69c069909ed
+
+	measure 'Ticket Médio Digital' = DIVIDE ( [Receita Digital], [Pedidos Digitais] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 02 Comercial Digital
+		lineageTag: 662c824f-1e81-5e65-9e58-173638a47616
+
+	measure 'Itens por Pedido Digital' = DIVIDE ( [Unidades Digitais], [Pedidos Digitais] )
+		formatString: #,0.00
+		displayFolder: 02 Comercial Digital
+		lineageTag: cce5ae2f-5669-5bd1-8117-bccae587eca5
+
+	measure 'Desconto Digital %' = DIVIDE ( [Descontos Digitais], [Receita Bruta Digital] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial Digital
+		lineageTag: 42e03aef-48fe-586e-b745-86405897cc3c
+
+	/// Receita digital / receita líquida da rede no mesmo filtro de loja, data e produto.
+	measure 'Share Digital %' = DIVIDE ( [Receita Digital], [Receita Rede (todos os canais)] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial Digital
+		lineageTag: 32732903-d445-5b8b-aa8d-5c503d38d8bb
+
+	measure 'Share Canal no Digital %' = DIVIDE ( [Receita Digital], CALCULATE ( [Receita Digital], ALLSELECTED ( dCanal ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Comercial Digital
+		lineageTag: 47d1ab29-b688-53dd-a82f-046a6dbd76b6
+
+	measure Sessões = SUM ( fSessoesDigitais[sessoes] )
+		formatString: #,0
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 4ea09ca5-d0e7-51f5-8de0-1aa9afaec147
+
+	measure Pageviews = SUM ( fSessoesDigitais[pageviews] )
+		formatString: #,0
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 1203c3ba-8805-54ac-aefd-b7294d47a9a1
+
+	/// ATENÇÃO: menor que Checkouts na base (defeito de origem). Não usar como etapa do funil.
+	measure 'Add to Cart' = SUM ( fSessoesDigitais[add_to_cart] )
+		formatString: #,0
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 732d4f38-e422-55ba-b20e-4ef42e1b426f
+
+	measure 'Checkouts Iniciados' = SUM ( fSessoesDigitais[iniciou_checkout] )
+		formatString: #,0
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 44af857c-0dbd-590e-a516-e111ba1666d3
+
+	/// Pedidos alocados nas sessões. Fecha com Pedidos Digitais por dia × loja × canal.
+	measure 'Pedidos (Funil)' = SUM ( fSessoesDigitais[pedidos] )
+		formatString: #,0
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 092bda2f-e893-56db-baf7-019eb420ef40
+
+	/// Pedidos ÷ sessões (f_sessoes_digitais).
+	measure 'Taxa Conversão %' = DIVIDE ( [Pedidos (Funil)], [Sessões] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 03 Funil & Conversão
+		lineageTag: fd2d94c9-4b1b-5f4d-b0a3-6c159007335b
+
+	/// Sessões com add to cart ÷ sessões. Indicador isolado (não é etapa do funil).
+	measure 'Taxa Add to Cart %' = DIVIDE ( [Add to Cart], [Sessões] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 53cf2a2e-519a-528c-9fed-50d35ead8f38
+
+	measure 'Taxa Checkout %' = DIVIDE ( [Checkouts Iniciados], [Sessões] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Funil & Conversão
+		lineageTag: db48661a-656a-5525-bcd0-c20c5475fd57
+
+	/// Pedidos ÷ checkouts iniciados.
+	measure 'Checkout → Pedido %' = DIVIDE ( [Pedidos (Funil)], [Checkouts Iniciados] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 74f19c75-9613-58ad-aa1f-ee99ba2e784f
+
+	/// Checkouts que não viraram pedido. Substitui 'abandono de carrinho', que a base não sustenta.
+	measure 'Abandono Checkout %' = 1 - [Checkout → Pedido %]
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 51bf497a-c10e-5fc2-9fb6-b3e3736724fd
+
+	measure 'Pageviews por Sessão' = DIVIDE ( [Pageviews], [Sessões] )
+		formatString: #,0.00
+		displayFolder: 03 Funil & Conversão
+		lineageTag: ac3e7e71-aba0-50a9-a316-554f9485250b
+
+	/// Receita digital ÷ sessões. Sem filtro de dispositivo/origem (a receita não tem essas dimensões).
+	measure 'Receita por Sessão' = DIVIDE ( CALCULATE ( [Receita Digital], REMOVEFILTERS ( dDispositivo ), REMOVEFILTERS ( dOrigemTrafego ) ), [Sessões] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 03 Funil & Conversão
+		lineageTag: cd03a7d3-631f-5aaf-9f45-9a6ecf5b79ba
+
+	measure 'Valor Etapa Funil' = SWITCH ( SELECTEDVALUE ( dEtapaFunil[Ordem Etapa] ), 1, [Sessões], 2, [Checkouts Iniciados], 3, [Pedidos (Funil)] )
+		formatString: #,0
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 0fa1216c-5b54-50e6-a086-dbfc345960ed
+
+	measure 'Alerta Funil' = IF ( [Add to Cart] < [Checkouts Iniciados], "Add to cart < checkout na fonte: etapa removida do funil", "" )
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 557f083f-1376-5cae-980a-fbf431181d9e
+
+	measure 'Share Sessões %' = DIVIDE ( [Sessões], CALCULATE ( [Sessões], ALLSELECTED ( dDispositivo ), ALLSELECTED ( dOrigemTrafego ), ALLSELECTED ( dCanal ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 03 Funil & Conversão
+		lineageTag: 61071b25-d0d8-5c1d-adc8-33977397bc99
+
+	measure 'Pedidos Entrega' = COUNTROWS ( fPedidosDigitais )
+		formatString: #,0
+		displayFolder: 04 CX
+		lineageTag: 3a1052a7-39fe-5c10-8dc3-39b22a5b46ab
+
+	/// Pedidos com prazo real ≤ prometido ÷ pedidos digitais. Não mede quantidade completa (in full): a base não tem quantidade prometida.
+	measure 'OTIF %' = DIVIDE ( SUM ( fPedidosDigitais[otif] ), [Pedidos Entrega] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 0da24481-e3c2-591b-ac6c-de5a594bcd7b
+
+	measure '% Entregas com Atraso' = DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Entregue com atraso" ), [Pedidos Entrega] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: ad90e9a6-13fb-5050-9123-008f7de2008f
+
+	measure '% Cancelado ou Problema' = DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Cancelado / Problema" ), [Pedidos Entrega] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 271d0a20-a6cc-5ee1-9516-cb0e2b5177bc
+
+	/// Frete médio por pedido (inclui fretes grátis = 0).
+	measure 'Frete Médio' = AVERAGE ( fPedidosDigitais[frete_valor] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 CX
+		lineageTag: beb75657-cacd-5093-b358-836f35884f67
+
+	measure 'Frete Médio Pago' = CALCULATE ( AVERAGE ( fPedidosDigitais[frete_valor] ), fPedidosDigitais[frete_gratis] = 0 )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 CX
+		lineageTag: b9c8c23a-3dbd-599a-b98d-57c808c100c2
+
+	measure '% Frete Grátis' = DIVIDE ( SUM ( fPedidosDigitais[frete_gratis] ), [Pedidos Entrega] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 3dda497d-b7d1-5d6b-94c4-0f1d92f3d4c1
+
+	measure 'Prazo Prometido Médio' = AVERAGE ( fPedidosDigitais[prazo_prometido_dias] )
+		formatString: #,0.0 "dias"
+		displayFolder: 04 CX
+		lineageTag: d20cd0a7-ca86-54f0-a4c3-91fc14b69795
+
+	measure 'Prazo Real Médio' = AVERAGE ( fPedidosDigitais[prazo_real_dias] )
+		formatString: #,0.0 "dias"
+		displayFolder: 04 CX
+		lineageTag: 264159a5-524c-53ab-89bd-d8db74d80f05
+
+	/// Média de dias de atraso só entre os pedidos atrasados.
+	measure 'Atraso Médio Entrega' = AVERAGEX ( FILTER ( fPedidosDigitais, fPedidosDigitais[atraso_dias] > 0 ), fPedidosDigitais[atraso_dias] )
+		formatString: #,0.0 "dias"
+		displayFolder: 04 CX
+		lineageTag: 2bae598f-4918-5f40-ae77-d979deca50fa
+
+	/// Soma por pedido. Difere ~6% do fulfillment mensal (fonte oficial de custo).
+	measure 'Custo Fulfillment Pedidos' = SUM ( fPedidosDigitais[custo_fulfillment] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 04 CX
+		lineageTag: 63135a8e-f477-5b96-a43f-63e77e8b4d58
+
+	measure 'Respostas Pesquisa' = COUNTROWS ( fPesquisasSatisfacao )
+		formatString: #,0
+		displayFolder: 04 CX
+		lineageTag: 5fbccf66-4beb-5e35-8f12-5c40257e8039
+
+	measure 'Taxa de Resposta %' = DIVIDE ( [Respostas Pesquisa], [Pedidos Entrega] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 91004e12-1e34-5e10-9545-2dc9806621b2
+
+	measure Promotores = CALCULATE ( [Respostas Pesquisa], fPesquisasSatisfacao[nps_score] >= 9 )
+		formatString: #,0
+		displayFolder: 04 CX
+		lineageTag: f128ff69-162b-5857-b766-00d223fc9397
+
+	measure Detratores = CALCULATE ( [Respostas Pesquisa], fPesquisasSatisfacao[nps_score] <= 6 )
+		formatString: #,0
+		displayFolder: 04 CX
+		lineageTag: df12ddd8-b3cd-5d30-9221-2020fa15973a
+
+	measure Neutros = [Respostas Pesquisa] - [Promotores] - [Detratores]
+		formatString: #,0
+		displayFolder: 04 CX
+		lineageTag: b71d7238-74e7-56ca-987d-ba1d24b582b9
+
+	measure '% Promotores' = DIVIDE ( [Promotores], [Respostas Pesquisa] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: bd660a46-bf53-595e-a2a3-c994f3c4b1cb
+
+	measure '% Neutros' = DIVIDE ( [Neutros], [Respostas Pesquisa] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 805f7d86-5a0b-5d47-8228-8dcfa0776950
+
+	measure '% Detratores' = DIVIDE ( [Detratores], [Respostas Pesquisa] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 8c121606-a794-5ccf-b53c-a4d478dc9612
+
+	/// % promotores (9–10) − % detratores (0–6), em pontos (−100 a +100).
+	measure NPS = IF ( [Respostas Pesquisa] > 0, ( [% Promotores] - [% Detratores] ) * 100 )
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 04 CX
+		lineageTag: 9a8a4703-fb3b-53ce-875f-529caab4c2b6
+
+	/// Média da nota CSAT (1–5).
+	measure 'CSAT Médio' = AVERAGE ( fPesquisasSatisfacao[CSAT] )
+		formatString: #,0.00
+		displayFolder: 04 CX
+		lineageTag: d1977b23-3881-53c0-bdc2-fee4dea679cc
+
+	/// Respostas com CSAT 4 ou 5.
+	measure '% CSAT Satisfeito' = DIVIDE ( CALCULATE ( [Respostas Pesquisa], fPesquisasSatisfacao[CSAT] >= 4 ), [Respostas Pesquisa] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 77dd919e-46e8-534e-899b-b69525700278
+
+	measure '% Motivo Negativo' = DIVIDE ( CALCULATE ( [Respostas Pesquisa], dMotivoSatisfacao[Polaridade] = "negativo" ), [Respostas Pesquisa] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: 23a0e70e-6dd5-505d-927b-be3f000676d3
+
+	measure 'Share Respostas %' = DIVIDE ( [Respostas Pesquisa], CALCULATE ( [Respostas Pesquisa], ALLSELECTED ( dMotivoSatisfacao ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 04 CX
+		lineageTag: aac45598-724c-578a-a214-b7cd71cdeaf2
+
+	measure Avaliações = COUNTROWS ( fAvaliacoesProduto )
+		formatString: #,0
+		displayFolder: 05 Produtos Digital
+		lineageTag: 49f6329c-69ae-50be-89da-11b7d853a154
+
+	/// Média das notas 1–5. Na base só existem notas 3 e 4: use a comparação relativa.
+	measure 'Nota Média Produto' = AVERAGE ( fAvaliacoesProduto[Nota] )
+		formatString: #,0.00
+		displayFolder: 05 Produtos Digital
+		lineageTag: 2e320909-754d-57b1-a82a-9c4fe6407ad4
+
+	/// Sinal relativo de insatisfação (única variação disponível na base).
+	measure '% Avaliações Abaixo de 4' = DIVIDE ( CALCULATE ( [Avaliações], fAvaliacoesProduto[Nota] < 4 ) + 0, [Avaliações] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 05 Produtos Digital
+		lineageTag: f3b4fe6e-c947-528c-b07f-662290b89005
+
+	measure '% Avaliações Verificadas' = DIVIDE ( CALCULATE ( [Avaliações], fAvaliacoesProduto[verificado] = 1 ), [Avaliações] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 05 Produtos Digital
+		lineageTag: dc52214a-ee8e-57d9-8cb6-94ba13f0e68a
+
+	measure 'Share Avaliações %' = DIVIDE ( [Avaliações], CALCULATE ( [Avaliações], ALLSELECTED ( fAvaliacoesProduto[Nota] ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 05 Produtos Digital
+		lineageTag: a49303ed-5bc0-5815-932e-cb1cb77c8340
+
+	/// Receita líquida de itens nos canais digitais (f_itens_venda).
+	measure 'Receita Digital Itens' = CALCULATE ( [Receita Líquida Itens], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 05 Produtos Digital
+		lineageTag: 7b99dc54-ccd4-59f3-a16d-0b406fce9a7b
+
+	measure 'Lucro Bruto Digital Itens' = CALCULATE ( [Lucro Bruto Itens], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 05 Produtos Digital
+		lineageTag: 18b3e9e6-1370-5580-8904-4590d757f45c
+
+	measure 'Margem Digital Itens %' = DIVIDE ( [Lucro Bruto Digital Itens], [Receita Digital Itens] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 05 Produtos Digital
+		lineageTag: 715c57f2-b952-59ee-99e5-30cc0a8c11ca
+
+	measure 'Unidades Digitais Itens' = CALCULATE ( SUM ( fItensVenda[quantidade] ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: #,0
+		displayFolder: 05 Produtos Digital
+		lineageTag: f1a9177f-0ea7-5c79-8c2d-293471222ee9
+
+	measure 'SKUs Digitais Vendidos' = CALCULATE ( DISTINCTCOUNT ( fItensVenda[id_produto] ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) )
+		formatString: #,0
+		displayFolder: 05 Produtos Digital
+		lineageTag: a9b75135-54a6-5ca3-b4e6-a56b3b6557dc
+
+	measure 'Avaliações por 100 Unidades' = DIVIDE ( [Avaliações], [Unidades Digitais Itens] ) * 100
+		formatString: #,0.0
+		displayFolder: 05 Produtos Digital
+		lineageTag: 672b997f-72a3-50b0-b4a4-57747109c5d5
+
+	/// Unidades digitais × % de avaliações abaixo de 4 (mín. 5 avaliações). Prioriza volume com insatisfação relativa. Premissa, não causalidade.
+	measure 'Score Oportunidade' = IF ( [Avaliações] >= 5, [Unidades Digitais Itens] * [% Avaliações Abaixo de 4] )
+		formatString: #,0
+		displayFolder: 05 Produtos Digital
+		lineageTag: 48c68510-66e8-5f12-b7c0-bf42706d6a0a
+
+	measure 'Ranking Oportunidade' = IF ( NOT ISBLANK ( [Score Oportunidade] ), RANKX ( ALLSELECTED ( dProduto ), [Score Oportunidade],, DESC, DENSE ) )
+		formatString: #,0
+		displayFolder: 05 Produtos Digital
+		lineageTag: 94798cf0-8ad5-5731-b319-17ee5a31bfc1
+
+	measure 'Share Receita Digital Categoria %' = DIVIDE ( [Receita Digital Itens], CALCULATE ( [Receita Digital Itens], ALLSELECTED ( dProduto ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 05 Produtos Digital
+		lineageTag: 77579329-5f76-537a-a2a7-1dfb94ebf868
+
+	/// Clientes identificados com ao menos 1 pedido digital no período.
+	measure 'Clientes Digitais' = CALCULATE ( DISTINCTCOUNT ( fVendas[id_cliente] ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[cliente_identificado] = TRUE () )
+		formatString: #,0
+		displayFolder: 06 Clientes Digitais
+		lineageTag: d4a2fe95-381b-5f94-bf7f-da990d8b66b7
+
+	measure 'Pedidos Digitais Identificados' = CALCULATE ( [Cupons], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[cliente_identificado] = TRUE () )
+		formatString: #,0
+		displayFolder: 06 Clientes Digitais
+		lineageTag: f12b62eb-f87f-5cd7-ad49-a7d29081b106
+
+	measure '% Pedidos Digitais Identificados' = DIVIDE ( [Pedidos Digitais Identificados], [Pedidos Digitais] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 06 Clientes Digitais
+		lineageTag: b156281c-4f72-5aac-985a-1feced8e7aeb
+
+	/// Clientes cuja 1ª compra digital observada (desde out/2024) caiu no período. Nos primeiros meses, quase todos aparecem como novos.
+	measure 'Clientes Digitais Novos' = CALCULATE ( DISTINCTCOUNT ( fVendas[id_cliente] ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[primeira_compra_digital] = TRUE () )
+		formatString: #,0
+		displayFolder: 06 Clientes Digitais
+		lineageTag: adc764a9-50fd-5e88-a235-01c3a428f323
+
+	measure 'Clientes Digitais Recorrentes' = [Clientes Digitais] - [Clientes Digitais Novos]
+		formatString: #,0
+		displayFolder: 06 Clientes Digitais
+		lineageTag: e9fe017d-bbd8-513b-a96f-c07883aa013d
+
+	measure '% Novos Digitais' = DIVIDE ( [Clientes Digitais Novos], [Clientes Digitais] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 06 Clientes Digitais
+		lineageTag: e1c40cbc-5e1e-51ca-afa5-af2693a24d93
+
+	/// Pedidos digitais por cliente identificado no período.
+	measure 'Frequência Digital' = DIVIDE ( [Pedidos Digitais Identificados], [Clientes Digitais] )
+		formatString: #,0.00
+		displayFolder: 06 Clientes Digitais
+		lineageTag: 3446a5a5-d8fa-5df0-a990-2b634996fb1b
+
+	/// % dos clientes digitais com 2+ pedidos digitais no período.
+	measure 'Recompra Digital %' =
+			VAR _c = CALCULATETABLE ( VALUES ( fVendas[id_cliente] ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[cliente_identificado] = TRUE () )
+			VAR _r = COUNTROWS ( FILTER ( _c, CALCULATE ( COUNTROWS ( fVendas ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) ) >= 2 ) )
+			RETURN DIVIDE ( _r, COUNTROWS ( _c ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 06 Clientes Digitais
+		lineageTag: 2b9843e2-3f8e-537e-907a-fd988dbaad10
+
+	measure 'Ticket Digital Identificado' = CALCULATE ( [Ticket Médio], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[cliente_identificado] = TRUE () )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 06 Clientes Digitais
+		lineageTag: 970e9286-a855-53ac-ae03-d94fb07a7414
+
+	measure 'Receita Digital por Cliente' = DIVIDE ( CALCULATE ( [Receita Líquida], KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[cliente_identificado] = TRUE () ), [Clientes Digitais] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 06 Clientes Digitais
+		lineageTag: 8d8098da-51cf-592a-9587-33efacb3aa58
+
+	/// % dos clientes digitais que também compraram na loja física no mesmo período.
+	measure '% Clientes Omnichannel' =
+			VAR _c = CALCULATETABLE ( VALUES ( fVendas[id_cliente] ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[cliente_identificado] = TRUE () )
+			VAR _o = FILTER ( _c, CALCULATE ( COUNTROWS ( fVendas ), REMOVEFILTERS ( dCanal ), dCanal[Grupo Canal] = "Físico" ) > 0 )
+			RETURN DIVIDE ( COUNTROWS ( _o ), COUNTROWS ( _c ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 06 Clientes Digitais
+		lineageTag: c8d0a8f5-3ee2-5892-8f6a-7900440e09c9
+
+	/// Clientes cuja 1ª compra digital caiu no mês da coorte.
+	measure 'Tamanho Coorte' = CALCULATE ( COUNTROWS ( dCliente ), REMOVEFILTERS ( dCalendario ), NOT ISBLANK ( dCliente[Coorte Digital Num] ) )
+		formatString: #,0
+		displayFolder: 06 Clientes Digitais
+		lineageTag: 94538a86-1940-550a-8f16-0ee697c7eefb
+
+	/// Clientes da coorte com pedido digital no mês ÷ tamanho da coorte. Coorte simples (1ª compra observada).
+	measure 'Retenção Coorte %' = DIVIDE ( [Clientes Digitais], [Tamanho Coorte] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 06 Clientes Digitais
+		lineageTag: 5b8927d4-53b8-5de1-80c3-8654cc501105
+
+	measure 'Share Clientes Digitais %' = DIVIDE ( [Clientes Digitais], CALCULATE ( [Clientes Digitais], ALLSELECTED ( dCliente ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 06 Clientes Digitais
+		lineageTag: 5a18618b-50fe-5f81-910b-ce1e7cb20e4a
+
+	/// Verdadeiro quando há filtro em dimensão que não existe nos custos digitais (loja × mês): custos e resultado ficam em branco.
+	measure '_Filtro Sem Custo Digital' = ISFILTERED ( dProduto ) || ISFILTERED ( dCliente ) || ISFILTERED ( dCanal[Canal] ) || ISFILTERED ( dDispositivo ) || ISFILTERED ( dOrigemTrafego ) || ISFILTERED ( dMotivoSatisfacao ) || ISFILTERED ( dFornecedor )
+		displayFolder: 99 Auditoria
+		isHidden
+		lineageTag: 19f8129d-5636-58be-8aed-bd221ba8c7ea
+
+	/// Mídia + plataforma + fulfillment + outros (loja × mês). Em branco com filtro de canal, produto, cliente, dispositivo ou origem.
+	measure 'Custo Digital Total' = IF ( NOT [_Filtro Sem Custo Digital], SUM ( fCustosDigitais[custo_digital_total] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: b1a426bb-ba44-5637-a639-03f309f0f774
+
+	///  Em branco com filtro de canal, produto, cliente, dispositivo ou origem.
+	measure 'Custo Mídia Paga' = IF ( NOT [_Filtro Sem Custo Digital], SUM ( fCustosDigitais[midia_paga] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: cf7a417d-c039-5ad7-bcf6-ceabed6d4b98
+
+	/// SaaS / gateway. Em branco com filtro de canal, produto, cliente, dispositivo ou origem.
+	measure 'Custo Plataforma' = IF ( NOT [_Filtro Sem Custo Digital], SUM ( fCustosDigitais[plataforma] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: 05812a01-9b0e-5d39-8b68-051186439601
+
+	/// Fonte oficial de fulfillment (mensal). Em branco com filtro de canal, produto, cliente, dispositivo ou origem.
+	measure 'Custo Fulfillment' = IF ( NOT [_Filtro Sem Custo Digital], SUM ( fCustosDigitais[fulfillment] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: e2539caf-6518-5264-997c-9d3efb94daca
+
+	///  Em branco com filtro de canal, produto, cliente, dispositivo ou origem.
+	measure 'Outros Custos Digitais' = IF ( NOT [_Filtro Sem Custo Digital], SUM ( fCustosDigitais[outros_digitais] ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: a2b4b0f4-b676-57c1-ac2c-8b9a0266b6c0
+
+	/// Lucro bruto digital − custos digitais diretos. Não rateia despesas da loja. NÃO é EBITDA nem lucro.
+	measure 'Resultado Digital Simplificado' = IF ( NOT [_Filtro Sem Custo Digital], [Lucro Bruto Digital] - [Custo Digital Total] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: 58b4818c-1ce2-52cb-9107-0844bd50e9bc
+
+	measure 'Margem Resultado Digital %' = DIVIDE ( [Resultado Digital Simplificado], [Receita Digital] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 07 Financeiro Digital
+		lineageTag: 7ff7f97a-172c-55d4-8b54-7f902a3f801e
+
+	measure 'Custo Digital % Receita' = DIVIDE ( [Custo Digital Total], [Receita Digital] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 07 Financeiro Digital
+		lineageTag: 2be4d764-782e-5872-b58d-b7363a7ad2f7
+
+	measure 'Mídia % Receita Digital' = DIVIDE ( [Custo Mídia Paga], [Receita Digital] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 07 Financeiro Digital
+		lineageTag: fcb90eb2-8ef5-5309-af4f-2fcbf9cdc347
+
+	/// Receita digital total ÷ mídia paga. Proxy: a receita não é atribuída por campanha.
+	measure 'ROAS Proxy' = DIVIDE ( [Receita Digital], [Custo Mídia Paga] )
+		formatString: 0.0"x"
+		displayFolder: 07 Financeiro Digital
+		lineageTag: 2d875240-c334-5d03-aee9-190faf0c323c
+
+	measure 'Custo por Pedido Digital' = DIVIDE ( [Custo Digital Total], [Pedidos Digitais] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: 49d343b3-d407-5ce7-978d-2a8efc4002ef
+
+	/// Mídia paga ÷ clientes digitais novos. Proxy de CAC: sem atribuição por canal de aquisição.
+	measure 'Mídia por Cliente Novo (proxy CAC)' = DIVIDE ( [Custo Mídia Paga], [Clientes Digitais Novos] )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 07 Financeiro Digital
+		lineageTag: 4d1c7e89-2326-574a-95cf-5ae04e78189d
+
+	/// [Resultado Digital Simplificado] no mesmo período do ano anterior (só com período comparável completo).
+	measure 'Resultado Digital LY' = IF ( [_Periodo Comparavel LY], CALCULATE ( [Resultado Digital Simplificado], SAMEPERIODLASTYEAR ( VAR _db = [_Data Base] RETURN CALCULATETABLE ( VALUES ( dCalendario[Data] ), KEEPFILTERS ( dCalendario[Data] <= _db ) ) ) ) )
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 01 Tempo Digital
+		lineageTag: d91d3fe9-e276-5368-9ff1-113c8d960271
+
+	measure 'Resultado Digital YoY %' = DIVIDE ( [Resultado Digital Simplificado] - [Resultado Digital LY], ABS ( [Resultado Digital LY] ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Tempo Digital
+		lineageTag: df89e600-57b8-52d9-8d49-e127e7b30875
+
+	/// Último mês do roadmap dentro do filtro de datas.
+	measure '_Mes Roadmap' = CALCULATE ( MAX ( fRoadmapIniciativas[data_mes] ) )
+		formatString: dd/MM/yyyy
+		displayFolder: 08 Estratégia
+		isHidden
+		lineageTag: e96e5fb3-c2bc-5844-84bc-7bb7fb2881a8
+
+	/// Média do % de conclusão das iniciativas no último mês do período (snapshot). Nunca média de meses: o % oscila na fonte.
+	measure '% Conclusão Roadmap' =
+			VAR _m = [_Mes Roadmap]
+			RETURN DIVIDE ( CALCULATE ( AVERAGE ( fRoadmapIniciativas[pct_conclusao] ), REMOVEFILTERS ( dCalendario ), fRoadmapIniciativas[data_mes] = _m ), 100 )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 08 Estratégia
+		lineageTag: 47dddf15-b95b-5ad5-8c2a-e638cce1895d
+
+	/// Soma do proxy de impacto no último mês. Unidade não documentada na fonte: tratar como índice relativo, não como % de receita.
+	measure 'Impacto Estimado (índice)' =
+			VAR _m = [_Mes Roadmap]
+			RETURN CALCULATE ( SUM ( fRoadmapIniciativas[impacto_estimado_receita_pct] ), REMOVEFILTERS ( dCalendario ), fRoadmapIniciativas[data_mes] = _m )
+		formatString: 0.00
+		displayFolder: 08 Estratégia
+		lineageTag: 9bcb771b-37ae-56b6-8c5d-82a7deb5d200
+
+	measure Iniciativas = COUNTROWS ( dIniciativa )
+		formatString: #,0
+		displayFolder: 08 Estratégia
+		lineageTag: 78912719-97c5-5101-aff4-9a3093fdf01b
+
+	measure 'Iniciativas Concluídas' =
+			VAR _m = [_Mes Roadmap]
+			RETURN CALCULATE ( COUNTROWS ( fRoadmapIniciativas ), REMOVEFILTERS ( dCalendario ), fRoadmapIniciativas[data_mes] = _m, fRoadmapIniciativas[Status Mês] = "Concluído" ) + 0
+		formatString: #,0
+		displayFolder: 08 Estratégia
+		lineageTag: ac6d62fb-90ad-53ff-ae2e-1f685917658b
+
+	measure 'Iniciativas Em Andamento' =
+			VAR _m = [_Mes Roadmap]
+			RETURN CALCULATE ( COUNTROWS ( fRoadmapIniciativas ), REMOVEFILTERS ( dCalendario ), fRoadmapIniciativas[data_mes] = _m, fRoadmapIniciativas[Status Mês] = "Em andamento" ) + 0
+		formatString: #,0
+		displayFolder: 08 Estratégia
+		lineageTag: 7a18e959-68a1-5d85-bd7a-e82736fe2019
+
+	measure 'Status Roadmap Atual' =
+			VAR _m = [_Mes Roadmap]
+			RETURN CALCULATE ( MAX ( fRoadmapIniciativas[Status Mês] ), REMOVEFILTERS ( dCalendario ), fRoadmapIniciativas[data_mes] = _m )
+		displayFolder: 08 Estratégia
+		lineageTag: 40291279-cfd0-5e28-996d-6faccfd7c53c
+
+	measure Experimentos = DISTINCTCOUNT ( fExperimentosAB[id_experimento] )
+		formatString: #,0
+		displayFolder: 08 Estratégia
+		lineageTag: ffb1bd46-e88e-5ad3-82d8-e895d1a14edf
+
+	measure 'Experimentos Vencedores' = CALCULATE ( DISTINCTCOUNT ( fExperimentosAB[id_experimento] ), fExperimentosAB[Resultado Teste] = "vencedor" ) + 0
+		formatString: #,0
+		displayFolder: 08 Estratégia
+		lineageTag: ad33f5ce-8daa-53a6-93bb-9c5c93c74479
+
+	/// Lift informado da variante B vs controle (coluna lift da fonte).
+	measure 'Lift Experimento' = CALCULATE ( MAX ( fExperimentosAB[lift] ), fExperimentosAB[Resultado Teste] <> "baseline" )
+		formatString: +0%;-0%;0%
+		displayFolder: 08 Estratégia
+		lineageTag: 1401aec3-92d7-5eed-96d2-8bab8d230274
+
+	measure 'Lift Médio Vencedores' = CALCULATE ( AVERAGE ( fExperimentosAB[lift] ), fExperimentosAB[Resultado Teste] = "vencedor" )
+		formatString: +0%;-0%;0%
+		displayFolder: 08 Estratégia
+		lineageTag: 85692e78-89ba-5db9-b349-bc265efc3a03
+
+	measure 'Taxa de Vitória Testes %' = DIVIDE ( [Experimentos Vencedores], [Experimentos] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 08 Estratégia
+		lineageTag: a7bca8fc-c645-5b49-a427-c0fa0e0d0838
+
+	measure 'Cor Resultado Teste' = SWITCH ( CALCULATE ( MAX ( fExperimentosAB[Resultado Teste] ), fExperimentosAB[Resultado Teste] <> "baseline" ), "vencedor", "#18B89F", "empatado", "#F2C46D", "#EF9277" )
+		displayFolder: 08 Estratégia
+		isHidden
+		lineageTag: c2ba44ed-534d-50bf-962c-69ed0d7fdd83
+
+	/// Atingimento do alvo do componente (0–100). NPS normalizado de −100..+50; CSAT de 1..4,5.
+	measure 'Score Componente' = SWITCH ( SELECTEDVALUE ( dMaturidade[Ordem Componente] ), 1, MIN ( 1, DIVIDE ( [Taxa Conversão %], 0.04 ) ) * 100, 2, MIN ( 1, DIVIDE ( [OTIF %], 0.95 ) ) * 100, 3, MAX ( 0, MIN ( 1, DIVIDE ( [NPS] + 100, 150 ) ) ) * 100, 4, MAX ( 0, MIN ( 1, DIVIDE ( [CSAT Médio] - 1, 3.5 ) ) ) * 100, 5, MIN ( 1, [% Conclusão Roadmap] ) * 100 )
+		formatString: 0
+		displayFolder: 08 Estratégia
+		lineageTag: f8f02daf-5225-5b27-9350-8142cca031d2
+
+	measure 'Valor Componente' =
+			SWITCH ( SELECTEDVALUE ( dMaturidade[Ordem Componente] ),
+			    1, FORMAT ( [Taxa Conversão %], "0.00%", "pt-BR" ), 2, FORMAT ( [OTIF %], "0.0%", "pt-BR" ), 3, FORMAT ( [NPS], "+0.0;-0.0", "pt-BR" ),
+			    4, FORMAT ( [CSAT Médio], "0.00", "pt-BR" ), 5, FORMAT ( [% Conclusão Roadmap], "0%", "pt-BR" ) )
+		displayFolder: 08 Estratégia
+		lineageTag: d0add0be-beec-5d95-b06a-47aa9c0f819b
+
+	/// Média simples dos 5 componentes (0–100). Score de gestão com pesos iguais e alvos-premissa: não é benchmark de mercado.
+	measure 'Score Maturidade Digital' = AVERAGEX ( ALL ( dMaturidade[Ordem Componente] ), [Score Componente] )
+		formatString: 0
+		displayFolder: 08 Estratégia
+		lineageTag: d8c3afc4-1a83-5962-82f0-6b2242fac916
+
+	measure 'Cor Score' = VAR _s = COALESCE ( [Score Componente], [Score Maturidade Digital] ) RETURN IF ( ISBLANK ( _s ), "#9FC9C1", IF ( _s >= 90, "#18B89F", IF ( _s >= 70, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 08 Estratégia
+		isHidden
+		lineageTag: daaf4085-7807-5033-af24-7f927c25ace5
+
+	measure 'Cor NPS' = VAR _v = [NPS] RETURN IF ( ISBLANK ( _v ), "#9FC9C1", IF ( _v >= 30, "#18B89F", IF ( _v >= 0, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: f182007d-4377-5a59-8193-7c00730c8aff
+
+	measure 'Cor OTIF' = VAR _v = [OTIF %] RETURN IF ( ISBLANK ( _v ), "#9FC9C1", IF ( _v >= 0.95, "#18B89F", IF ( _v >= 0.85, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: f416fb01-b011-5c7f-ad87-affdd458ccd6
+
+	measure 'Cor CSAT' = VAR _v = [CSAT Médio] RETURN IF ( ISBLANK ( _v ), "#9FC9C1", IF ( _v >= 4.5, "#18B89F", IF ( _v >= 4, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 3a063f29-0df4-5ed3-a724-5941df2f8d20
+
+	measure 'Cor Conversão' = VAR _v = [Taxa Conversão %] RETURN IF ( ISBLANK ( _v ), "#9FC9C1", IF ( _v >= 0.04, "#18B89F", IF ( _v >= 0.025, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: f628ea44-2081-5914-8d04-db1a770907b9
+
+	/// Relativa à seleção: verde ≤ média, âmbar até 1,5× a média, coral acima.
+	measure 'Cor Nota' = VAR _v = [% Avaliações Abaixo de 4] VAR _r = CALCULATE ( [% Avaliações Abaixo de 4], ALLSELECTED ( dProduto ) ) RETURN IF ( ISBLANK ( _v ), "#9FC9C1", IF ( _v <= _r, "#18B89F", IF ( _v <= _r * 1.5, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: ce953d54-c04d-57ea-8b40-d682b8f21161
+
+	measure 'Cor Polaridade' = IF ( SELECTEDVALUE ( dMotivoSatisfacao[Polaridade] ) = "negativo", "#EF9277", "#18B89F" )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 961b38e0-8418-5c06-bb9e-6d4da1d9ebb3
+
+	measure 'Cor Resultado Digital' = VAR _v = [Margem Resultado Digital %] RETURN IF ( ISBLANK ( _v ), "#9FC9C1", IF ( _v >= 0.2, "#18B89F", IF ( _v >= 0.1, "#F2C46D", "#EF9277" ) ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: ae80b600-a4e4-5b2b-bd89-4441e95459fa
+
+	measure 'Cor Destaque Receita Digital Mes' =
+			VAR _mx = CALCULATE ( MAXX ( VALUES ( dCalendario[AnoMes Num] ), [Receita Digital] ), ALLSELECTED ( dCalendario ) )
+			RETURN IF ( NOT ISBLANK ( [Receita Digital] ), IF ( [Receita Digital] = _mx, "#18B89F", "#2E7F78" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: b97b48ab-d97f-5ea9-b457-e5853c264d48
+
+	measure 'Cor Pilar' = SWITCH ( SELECTEDVALUE ( dIniciativa[Pilar] ), "Conversão", "#18B89F", "CX", "#DDF5EB", "Produto", "#F2C46D", "Operação", "#EF9277", "#5FA8A0" )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: ce3d3d1d-4488-5d14-91a2-85ea384c90b3
+
+	measure 'Txt Resultado Digital' = IF ( ISBLANK ( [Custo Digital % Receita] ), "indisponível com filtro de canal/produto", "custos digitais = " & FORMAT ( [Custo Digital % Receita], "0.0%", "pt-BR" ) & " da receita · não é EBITDA" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: f11d1e27-f8b5-5a0c-8846-5bcedfcf448c
+
+	measure 'Txt OTIF Meta' = IF ( ISBLANK ( [OTIF Var pp] ), "alvo 95% (I08)", IF ( [OTIF Var pp] >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( [OTIF Var pp] ), "0.0", "pt-BR" ) & " p.p. vs LY · alvo 95%" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: d0c44976-7489-55db-aa65-6f49cf383511
+
+	measure 'Txt NPS' = IF ( ISBLANK ( [NPS Var] ), "alvo +50 (I09)", IF ( [NPS Var] >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( [NPS Var] ), "0.0", "pt-BR" ) & " pts vs LY · alvo +50" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: c66c460a-5cc8-54c7-b383-7460d8be444c
+
+	measure 'Txt Prazo' = "prometido " & FORMAT ( [Prazo Prometido Médio], "0.0", "pt-BR" ) & " dias · atraso médio " & FORMAT ( [Atraso Médio Entrega], "0.0", "pt-BR" ) & " d"
+		displayFolder: 10 UI & Formatação
+		lineageTag: c1015a9e-93f1-571d-a5d6-771517be88aa
+
+	measure 'Txt Frete' = FORMAT ( [% Frete Grátis], "0%", "pt-BR" ) & " dos pedidos com frete grátis"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 56c7080e-d0f2-559d-840d-15e897f93e69
+
+	measure 'Txt Nota' = FORMAT ( [% Avaliações Abaixo de 4], "0.0%", "pt-BR" ) & " abaixo de 4 · escala só 3–4 na base"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 36b057f8-c75e-5e5d-8317-58b8c710a27c
+
+	measure 'Txt Novos Digitais' = FORMAT ( [% Novos Digitais], "0%", "pt-BR" ) & " dos clientes digitais (1ª compra observada)"
+		displayFolder: 10 UI & Formatação
+		lineageTag: aaf8cfea-88be-5049-acc0-0f7722b561ce
+
+	measure 'Txt Omni' = "também compram na loja física"
+		displayFolder: 10 UI & Formatação
+		lineageTag: a7ceef8f-e8a8-5c50-b801-5fde441506d5
+
+	measure 'Txt Conversão' = IF ( ISBLANK ( [Conversão Var pp] ), "alvo-premissa 4,0%", IF ( [Conversão Var pp] >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( [Conversão Var pp] ), "0.00", "pt-BR" ) & " p.p. vs LY" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: b88e709d-c773-583a-b652-00b3943010ca
+
+	measure 'Txt Checkout' = FORMAT ( [Abandono Checkout %], "0%", "pt-BR" ) & " dos checkouts não fecham"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 3595c0e8-1aa5-5881-95b6-00a8436b1daf
+
+	measure 'Txt ATC' = "indicador isolado · base inconsistente"
+		displayFolder: 10 UI & Formatação
+		lineageTag: 71e23d5b-1436-548c-b2f2-bdc5693614c7
+
+	measure 'Txt Roadmap' = FORMAT ( [Iniciativas Concluídas], "0" ) & " de " & FORMAT ( [Iniciativas], "0" ) & " concluídas em " & FORMAT ( [_Mes Roadmap], "mm/yyyy" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 3bb016d2-f2f5-5612-940a-fbff651eb69b
+
+	measure 'Txt Maturidade' = "média de 5 componentes vs alvo"
+		displayFolder: 10 UI & Formatação
+		lineageTag: f5ebedad-e76a-528f-ae24-2f6ffdab11e2
+
+	measure 'Txt Lift' = FORMAT ( [Experimentos Vencedores], "0" ) & " vencedores de " & FORMAT ( [Experimentos], "0" ) & " testes"
+		displayFolder: 10 UI & Formatação
+		lineageTag: e2d3a3c1-8541-5b4e-9d74-9ec620b48247
+
+	measure 'Txt Custo Mídia' = IF ( ISBLANK ( [Mídia % Receita Digital] ), "indisponível p/ este filtro", "mídia = " & FORMAT ( [Mídia % Receita Digital], "0.0%", "pt-BR" ) & " da receita digital" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: 40b10693-6ee9-580a-b197-8a1086c68a94
+
+	measure 'Txt Share Digital' = IF ( ISBLANK ( [Share Digital Var pp] ), "da receita da rede", IF ( [Share Digital Var pp] >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( [Share Digital Var pp] ), "0.0", "pt-BR" ) & " p.p. vs ano anterior" )
+		displayFolder: 10 UI & Formatação
+		lineageTag: cfc94589-c50e-5f2b-8493-2819d7a7e94f
+
+	measure 'Cor Share Digital' = IF ( ISBLANK ( [Share Digital Var pp] ), "#18B89F", IF ( [Share Digital Var pp] >= 0, "#18B89F", "#F2C46D" ) )
+		displayFolder: 10 UI & Formatação
+		isHidden
+		lineageTag: 252ae4d3-e2d4-5a2e-ab9a-67f2fedd98d1
+
+	/// Barra SVG para coluna de tabela (categoria de dados ImageUrl).
+	measure 'SVG Barra Receita Canal' =
+			VAR _v = [Receita Digital]
+			VAR _mx = CALCULATE ( MAXX ( ALLSELECTED ( dCanal[Canal] ), [Receita Digital] ), ALLSELECTED ( dCanal[Canal] ) )
+			VAR _w = IF ( _mx > 0, MAX ( 2, DIVIDE ( _v, _mx ) * 116 ), 0 )
+			RETURN IF ( NOT ISBLANK ( _v ),
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18'><rect x='0' y='5' width='120' height='8' rx='4' fill='%23FFFFFF' fill-opacity='0.08'/><rect x='0' y='5' width='" & FORMAT ( _w, "0", "en-US" ) & "' height='8' rx='4' fill='%2318B89F'/></svg>" )
+		dataCategory: ImageUrl
+		displayFolder: 11 SVG & HTML
+		lineageTag: bff44dac-0aa0-5200-9abe-2f631e67e33b
+
+	/// Barra SVG para coluna de tabela (categoria de dados ImageUrl).
+	measure 'SVG Barra Oportunidade SKU' =
+			VAR _v = [Score Oportunidade]
+			VAR _mx = CALCULATE ( MAXX ( ALLSELECTED ( dProduto[Produto] ), [Score Oportunidade] ), ALLSELECTED ( dProduto[Produto] ) )
+			VAR _w = IF ( _mx > 0, MAX ( 2, DIVIDE ( _v, _mx ) * 116 ), 0 )
+			RETURN IF ( NOT ISBLANK ( _v ),
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18'><rect x='0' y='5' width='120' height='8' rx='4' fill='%23FFFFFF' fill-opacity='0.08'/><rect x='0' y='5' width='" & FORMAT ( _w, "0", "en-US" ) & "' height='8' rx='4' fill='%23EF9277'/></svg>" )
+		dataCategory: ImageUrl
+		displayFolder: 11 SVG & HTML
+		lineageTag: 79675b30-f677-57b4-8212-2c46f1ade4d2
+
+	/// Barra SVG para coluna de tabela (categoria de dados ImageUrl).
+	measure 'SVG Barra Score Componente' =
+			VAR _v = [Score Componente]
+			VAR _mx = CALCULATE ( MAXX ( ALLSELECTED ( dMaturidade[Componente] ), [Score Componente] ), ALLSELECTED ( dMaturidade[Componente] ) )
+			VAR _w = IF ( _mx > 0, MAX ( 2, DIVIDE ( _v, _mx ) * 116 ), 0 )
+			RETURN IF ( NOT ISBLANK ( _v ),
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18'><rect x='0' y='5' width='120' height='8' rx='4' fill='%23FFFFFF' fill-opacity='0.08'/><rect x='0' y='5' width='" & FORMAT ( _w, "0", "en-US" ) & "' height='8' rx='4' fill='%2318B89F'/></svg>" )
+		dataCategory: ImageUrl
+		displayFolder: 11 SVG & HTML
+		lineageTag: eecf0883-e38b-5555-b0a3-72ce7c83dedc
+
+	/// Barra SVG para coluna de tabela (categoria de dados ImageUrl).
+	measure 'SVG Barra Sessões Origem' =
+			VAR _v = [Sessões]
+			VAR _mx = CALCULATE ( MAXX ( ALLSELECTED ( dOrigemTrafego[Origem] ), [Sessões] ), ALLSELECTED ( dOrigemTrafego[Origem] ) )
+			VAR _w = IF ( _mx > 0, MAX ( 2, DIVIDE ( _v, _mx ) * 116 ), 0 )
+			RETURN IF ( NOT ISBLANK ( _v ),
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18'><rect x='0' y='5' width='120' height='8' rx='4' fill='%23FFFFFF' fill-opacity='0.08'/><rect x='0' y='5' width='" & FORMAT ( _w, "0", "en-US" ) & "' height='8' rx='4' fill='%2318B89F'/></svg>" )
+		dataCategory: ImageUrl
+		displayFolder: 11 SVG & HTML
+		lineageTag: ebbf6e03-39af-5543-9bf5-20bb42b2db62
+
+	/// Fato derivado dos filtros. Não atribui causa.
+	measure 'Narrativa Digital Executiva' =
+			VAR _r = [Receita Digital]
+			VAR _y = [Receita Digital YoY %]
+			VAR _s = [Share Digital %]
+			VAR _t = ADDCOLUMNS ( CALCULATETABLE ( VALUES ( dCanal[Canal] ), dCanal[Grupo Canal] = "Digital" ), "@r", [Receita Digital] )
+			VAR _top = TOPN ( 1, _t, [@r], DESC )
+			VAR _f1 = "Receita digital de R$ " & FORMAT ( _r / 1000000, "#,0.00", "pt-BR" ) & " mi (" & FORMAT ( _s, "0.0%", "pt-BR" ) & " da rede)"
+			    & IF ( ISBLANK ( _y ), ", sem período comparável completo no ano anterior.", ", " & IF ( _y >= 0, "alta", "queda" ) & " de " & FORMAT ( ABS ( _y ), "0.0%", "pt-BR" ) & " vs mesmo período do ano anterior." )
+			VAR _f2 = IF ( COUNTROWS ( _t ) > 1, " " & MAXX ( _top, dCanal[Canal] ) & " lidera com " & FORMAT ( DIVIDE ( MAXX ( _top, [@r] ), _r ), "0%", "pt-BR" ) & " do digital.", "" )
+			VAR _f3 = IF ( ISBLANK ( [Resultado Digital Simplificado] ), "", " Depois dos custos digitais diretos (" & FORMAT ( [Custo Digital % Receita], "0.0%", "pt-BR" ) & " da receita), sobra resultado simplificado de R$ " & FORMAT ( [Resultado Digital Simplificado] / 1000000, "#,0.00", "pt-BR" ) & " mi." )
+			RETURN IF ( ISBLANK ( _r ), "Sem vendas digitais para os filtros selecionados.", _f1 & _f2 & _f3 )
+		displayFolder: 09 Narrativas
+		lineageTag: 92e2ce17-2896-5e3e-bc53-f641aad57cb8
+
+	measure 'Narrativa Funil' =
+			VAR _t = ADDCOLUMNS ( VALUES ( dDispositivo[Dispositivo] ), "@c", [Taxa Conversão %], "@s", [Sessões] )
+			VAR _pior = TOPN ( 1, FILTER ( _t, [@s] >= 0.03 * [Sessões] ), [@c], ASC )
+			VAR _melhor = TOPN ( 1, FILTER ( _t, [@s] >= 0.03 * [Sessões] ), [@c], DESC )
+			RETURN IF ( ISBLANK ( [Sessões] ), "Sem sessões para os filtros selecionados.",
+			    FORMAT ( [Sessões], "#,0", "pt-BR" ) & " sessões geraram " & FORMAT ( [Pedidos (Funil)], "#,0", "pt-BR" ) & " pedidos: conversão de " & FORMAT ( [Taxa Conversão %], "0.00%", "pt-BR" )
+			    & "; " & FORMAT ( [Abandono Checkout %], "0%", "pt-BR" ) & " dos checkouts não fecham."
+			    & IF ( COUNTROWS ( _t ) > 1, " Maior conversão: " & MAXX ( _melhor, dDispositivo[Dispositivo] ) & " (" & FORMAT ( MAXX ( _melhor, [@c] ), "0.00%", "pt-BR" ) & "); menor: "
+			        & MAXX ( _pior, dDispositivo[Dispositivo] ) & " (" & FORMAT ( MAXX ( _pior, [@c] ), "0.00%", "pt-BR" ) & ") — hipótese a testar: experiência no dispositivo.", "" ) )
+		displayFolder: 09 Narrativas
+		lineageTag: 374c5f9d-ae23-5539-ad5e-2d2c17568e51
+
+	measure 'Narrativa CX' =
+			VAR _t = ADDCOLUMNS ( VALUES ( dMotivoSatisfacao[Motivo] ), "@n", CALCULATE ( [Respostas Pesquisa], dMotivoSatisfacao[Polaridade] = "negativo" ) )
+			VAR _top = TOPN ( 1, FILTER ( _t, [@n] > 0 ), [@n], DESC )
+			RETURN IF ( ISBLANK ( [Respostas Pesquisa] ), "Sem pesquisas para os filtros selecionados.",
+			    "NPS de " & FORMAT ( [NPS], "+0.0;-0.0", "pt-BR" ) & " (" & FORMAT ( [% Promotores], "0%", "pt-BR" ) & " promotores, " & FORMAT ( [% Detratores], "0%", "pt-BR" ) & " detratores) e CSAT de "
+			    & FORMAT ( [CSAT Médio], "0.00", "pt-BR" ) & ". OTIF de " & FORMAT ( [OTIF %], "0.0%", "pt-BR" ) & ", a " & FORMAT ( ( 0.95 - [OTIF %] ) * 100, "0.0", "pt-BR" ) & " p.p. do alvo de 95%."
+			    & IF ( COUNTROWS ( _top ) = 1, " Motivo negativo mais citado: " & MAXX ( _top, dMotivoSatisfacao[Motivo] ) & " (" & FORMAT ( DIVIDE ( MAXX ( _top, [@n] ), [Respostas Pesquisa] ), "0%", "pt-BR" ) & " das respostas).", "" ) )
+		displayFolder: 09 Narrativas
+		lineageTag: 988a2e4d-9ab0-52fc-8261-6ad5463abe98
+
+	measure 'Narrativa Produtos Digital' =
+			VAR _c = ADDCOLUMNS ( VALUES ( dProduto[Categoria] ), "@p", [% Avaliações Abaixo de 4], "@a", [Avaliações] )
+			VAR _pior = TOPN ( 1, FILTER ( _c, [@a] >= 30 ), [@p], DESC )
+			VAR _sku = TOPN ( 1, ADDCOLUMNS ( VALUES ( dProduto[Produto] ), "@s", [Score Oportunidade] ), [@s], DESC )
+			RETURN IF ( ISBLANK ( [Avaliações] ), "Sem avaliações para os filtros selecionados.",
+			    FORMAT ( [Avaliações], "#,0", "pt-BR" ) & " avaliações, nota média " & FORMAT ( [Nota Média Produto], "0.00", "pt-BR" ) & " — a base só tem notas 3 e 4, então o sinal útil é o % abaixo de 4 ("
+			    & FORMAT ( [% Avaliações Abaixo de 4], "0.0%", "pt-BR" ) & ")."
+			    & IF ( COUNTROWS ( _pior ) = 1 && COUNTROWS ( _c ) > 1, " Maior insatisfação relativa: " & MAXX ( _pior, dProduto[Categoria] ) & " (" & FORMAT ( MAXX ( _pior, [@p] ), "0.0%", "pt-BR" ) & ").", "" )
+			    & IF ( NOT ISBLANK ( MAXX ( _sku, [@s] ) ) && MAXX ( _sku, [@s] ) > 0, " Primeiro SKU a investigar: " & MAXX ( _sku, dProduto[Produto] ) & ".", "" ) )
+		displayFolder: 09 Narrativas
+		lineageTag: 8d9e2be7-c9fc-5bfe-aae7-3fee8ce2a358
+
+	measure 'Narrativa Clientes Digitais' =
+			IF ( ISBLANK ( [Clientes Digitais] ), "Sem clientes digitais identificados para os filtros selecionados.",
+			    FORMAT ( [Clientes Digitais], "#,0", "pt-BR" ) & " clientes compraram no digital (" & FORMAT ( [% Pedidos Digitais Identificados], "0%", "pt-BR" ) & " dos pedidos identificados), com "
+			    & FORMAT ( [Frequência Digital], "0.0", "pt-BR" ) & " pedidos por cliente e " & FORMAT ( [Recompra Digital %], "0%", "pt-BR" ) & " de recompra. "
+			    & FORMAT ( [% Clientes Omnichannel], "0%", "pt-BR" ) & " também compram na loja física: o cliente é omnichannel, não exclusivo do digital." )
+		displayFolder: 09 Narrativas
+		lineageTag: 3816691e-a196-562a-86ed-56d46932bc02
+
+	measure 'Recomendações Priorizadas' =
+			VAR _t = ADDCOLUMNS ( ALL ( dMaturidade[Ordem Componente], dMaturidade[Componente] ), "@g", 100 - [Score Componente] )
+			VAR _r = ADDCOLUMNS ( FILTER ( _t, [@g] > 0.5 ), "@k", RANKX ( FILTER ( _t, [@g] > 0.5 ), [@g],, DESC, DENSE ) )
+			VAR _txt = CONCATENATEX ( _r,
+			    "<li><b>" & dMaturidade[Componente] & "</b> · gap " & FORMAT ( [@g], "0", "pt-BR" ) & " pts — " &
+			    SWITCH ( dMaturidade[Ordem Componente],
+			        1, "conversão " & FORMAT ( [Taxa Conversão %], "0.00%", "pt-BR" ) & " vs 4%: atacar o pior dispositivo e o abandono de checkout (" & FORMAT ( [Abandono Checkout %], "0%", "pt-BR" ) & ").",
+			        2, "OTIF " & FORMAT ( [OTIF %], "0.0%", "pt-BR" ) & " vs 95%: revisar prazo prometido (I08), " & FORMAT ( [% Entregas com Atraso], "0.0%", "pt-BR" ) & " dos pedidos atrasam.",
+			        3, "NPS " & FORMAT ( [NPS], "+0;-0", "pt-BR" ) & " vs +50: tratar os motivos negativos mais citados antes de ampliar mídia.",
+			        4, "CSAT " & FORMAT ( [CSAT Médio], "0.00", "pt-BR" ) & " vs 4,5: atendimento e app (I02, I05).",
+			        5, "roadmap em " & FORMAT ( [% Conclusão Roadmap], "0%", "pt-BR" ) & ": destravar iniciativas planejadas (I06, I07, I10)." ) & "</li>",
+			    "", [@k], ASC )
+			RETURN "<style>.n{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;display:flex;flex-direction:column;animation:f .6s ease both}.h{font-size:13px;font-weight:600;color:#18B89F;letter-spacing:.3px;margin-bottom:8px}.h:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#18B89F;box-shadow:0 0 10px #18B89F;margin-right:8px}.p{font-size:13.5px;line-height:1.55}.ft{margin-top:auto;font-size:10.5px;color:#9FC9C1;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style><div class='n'><div class='h'>Recomendações priorizadas (maior gap primeiro)</div><ol style='margin:0;padding-left:18px;font-size:12.5px;line-height:1.5'>" & _txt & "</ol><div class='ft'>Gap = 100 − atingimento do alvo · alvos são premissas · priorização, não causalidade</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: bd0a47ef-300c-57f2-b915-92cb1ed927e2
+
+	measure 'Narrativa Estratégia' =
+			"Maturidade digital " & FORMAT ( [Score Maturidade Digital], "0", "pt-BR" ) & "/100. Roadmap com " & FORMAT ( [% Conclusão Roadmap], "0%", "pt-BR" ) & " de conclusão média e "
+			    & FORMAT ( [Iniciativas Concluídas], "0" ) & " de " & FORMAT ( [Iniciativas], "0" ) & " iniciativas concluídas; " & FORMAT ( [Experimentos Vencedores], "0" ) & " de " & FORMAT ( [Experimentos], "0" )
+			    & " testes A/B venceram (lift médio " & FORMAT ( [Lift Médio Vencedores], "+0%", "pt-BR" ) & "). Lift de teste não soma: são métricas e períodos diferentes."
+		displayFolder: 09 Narrativas
+		lineageTag: d86b679c-6d56-5f01-b567-be28e26c9aa9
+
+	measure 'HTML Narrativa Digital Executiva' = "<style>.n{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;display:flex;flex-direction:column;animation:f .6s ease both}.h{font-size:13px;font-weight:600;color:#18B89F;letter-spacing:.3px;margin-bottom:8px}.h:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#18B89F;box-shadow:0 0 10px #18B89F;margin-right:8px}.p{font-size:13.5px;line-height:1.55}.ft{margin-top:auto;font-size:10.5px;color:#9FC9C1;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style><div class='n'><div class='h'>Leitura automática</div><div class='p'>" & [Narrativa Digital Executiva] & "</div><div class='ft'>Fato derivado dos filtros atuais · hipótese e ação a validar · não indica causa</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: 6ae1cbc0-0e63-5e41-ab74-4f4dc2cef418
+
+	measure 'HTML Narrativa Funil' = "<style>.n{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;display:flex;flex-direction:column;animation:f .6s ease both}.h{font-size:13px;font-weight:600;color:#18B89F;letter-spacing:.3px;margin-bottom:8px}.h:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#18B89F;box-shadow:0 0 10px #18B89F;margin-right:8px}.p{font-size:13.5px;line-height:1.55}.ft{margin-top:auto;font-size:10.5px;color:#9FC9C1;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style><div class='n'><div class='h'>Leitura automática</div><div class='p'>" & [Narrativa Funil] & "</div><div class='ft'>Fato derivado dos filtros atuais · hipótese e ação a validar · não indica causa</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: e3628238-2d41-559d-ba90-56380111fc5b
+
+	measure 'HTML Narrativa CX' = "<style>.n{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;display:flex;flex-direction:column;animation:f .6s ease both}.h{font-size:13px;font-weight:600;color:#18B89F;letter-spacing:.3px;margin-bottom:8px}.h:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#18B89F;box-shadow:0 0 10px #18B89F;margin-right:8px}.p{font-size:13.5px;line-height:1.55}.ft{margin-top:auto;font-size:10.5px;color:#9FC9C1;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style><div class='n'><div class='h'>Leitura automática</div><div class='p'>" & [Narrativa CX] & "</div><div class='ft'>Fato derivado dos filtros atuais · hipótese e ação a validar · não indica causa</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: e397beb8-ce08-5cab-8408-728e98ef381d
+
+	measure 'HTML Narrativa Produtos Digital' = "<style>.n{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;display:flex;flex-direction:column;animation:f .6s ease both}.h{font-size:13px;font-weight:600;color:#18B89F;letter-spacing:.3px;margin-bottom:8px}.h:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#18B89F;box-shadow:0 0 10px #18B89F;margin-right:8px}.p{font-size:13.5px;line-height:1.55}.ft{margin-top:auto;font-size:10.5px;color:#9FC9C1;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style><div class='n'><div class='h'>Leitura automática</div><div class='p'>" & [Narrativa Produtos Digital] & "</div><div class='ft'>Fato derivado dos filtros atuais · hipótese e ação a validar · não indica causa</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: e15c449e-346d-5a4a-84f8-98046d7dc3a2
+
+	measure 'HTML Narrativa Clientes Digitais' = "<style>.n{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;display:flex;flex-direction:column;animation:f .6s ease both}.h{font-size:13px;font-weight:600;color:#18B89F;letter-spacing:.3px;margin-bottom:8px}.h:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#18B89F;box-shadow:0 0 10px #18B89F;margin-right:8px}.p{font-size:13.5px;line-height:1.55}.ft{margin-top:auto;font-size:10.5px;color:#9FC9C1;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style><div class='n'><div class='h'>Leitura automática</div><div class='p'>" & [Narrativa Clientes Digitais] & "</div><div class='ft'>Fato derivado dos filtros atuais · hipótese e ação a validar · não indica causa</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: 80eceb73-8ec0-5124-8c66-937be3a3dcf5
+
+	measure 'HTML Narrativa Estratégia' = "<style>.n{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;display:flex;flex-direction:column;animation:f .6s ease both}.h{font-size:13px;font-weight:600;color:#18B89F;letter-spacing:.3px;margin-bottom:8px}.h:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#18B89F;box-shadow:0 0 10px #18B89F;margin-right:8px}.p{font-size:13.5px;line-height:1.55}.ft{margin-top:auto;font-size:10.5px;color:#9FC9C1;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style><div class='n'><div class='h'>Leitura automática</div><div class='p'>" & [Narrativa Estratégia] & "</div><div class='ft'>Fato derivado dos filtros atuais · hipótese e ação a validar · não indica causa</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: 34579a2b-1b50-5a4e-9bc8-b45a22b1e423
+
+	measure 'HTML Alerta Funil' = "<style>.a{font-family:Segoe UI,sans-serif;color:#E8F3F1;background:rgba(242,196,109,.10);border:1px solid rgba(242,196,109,.5);border-radius:12px;padding:10px 14px;height:100%;box-sizing:border-box}.a b{color:#F2C46D}.a p{margin:4px 0 0;font-size:11.5px;line-height:1.45}</style><div class='a'><b>⚠ Qualidade da base</b><p>Add to cart (" & FORMAT ( [Add to Cart], "#,0", "pt-BR" ) & ") é menor que checkouts (" & FORMAT ( [Checkouts Iniciados], "#,0", "pt-BR" ) & ") em todos os meses. O funil usa Sessões → Checkout → Pedido; add to cart aparece só como taxa isolada.</p></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: 3f1e9b99-95c3-5c33-b33a-b0591a92f91e
+
+	measure 'HTML Alerta Reviews' = "<style>.a{font-family:Segoe UI,sans-serif;color:#E8F3F1;background:rgba(242,196,109,.10);border:1px solid rgba(242,196,109,.5);border-radius:12px;padding:10px 14px;height:100%;box-sizing:border-box}.a b{color:#F2C46D}.a p{margin:4px 0 0;font-size:11.5px;line-height:1.45}</style><div class='a'><b>⚠ Qualidade da base</b><p>As avaliações só têm notas 3 e 4. A nota média quase não varia; use o % abaixo de 4 como sinal relativo. Não há base para afirmar baixa satisfação absoluta.</p></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: 52fbb82f-7efc-5241-9e24-411aa78b8b71
+
+	measure 'HTML Tooltip Digital' =
+			VAR _r = [Receita Digital]
+			VAR _y = [Receita Digital YoY %]
+			VAR _c = IF ( ISBLANK ( _y ), "#9FC9C1", IF ( _y >= 0, "#18B89F", "#EF9277" ) )
+			RETURN "<style>.tt{font-family:Segoe UI,sans-serif;color:#E8F3F1;padding:4px}.tt .l{font-size:11px;color:#9FC9C1}.tt .b{font-size:22px;font-weight:600}.tt .r{display:flex;gap:16px;margin-top:8px}.tt .s{font-size:10px;color:#9FC9C1;margin-top:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:6px;line-height:1.4}</style>"
+			    & "<div class='tt'><div class='l'>Receita digital · " & [Período Selecionado] & "</div><div class='b'>" & IF ( ABS ( _r ) >= 1000000, "R$ " & FORMAT ( _r / 1000000, "#,0.00", "pt-BR" ) & " mi", "R$ " & FORMAT ( _r / 1000, "#,0.0", "pt-BR" ) & " mil" ) & " <span style='font-size:13px;color:" & _c & "'>" & IF ( ISBLANK ( _y ), "s/ base LY", FORMAT ( _y, "+0.0%;-0.0%", "pt-BR" ) & " vs LY" ) & "</span></div>"
+			    & "<div class='r'><div><div class='l'>Pedidos</div><b>" & FORMAT ( [Pedidos Digitais], "#,0", "pt-BR" ) & "</b></div>"
+			    & "<div><div class='l'>Ticket</div><b>R$ " & FORMAT ( [Ticket Médio Digital], "#,0.00", "pt-BR" ) & "</b></div>"
+			    & "<div><div class='l'>OTIF</div><b>" & FORMAT ( [OTIF %], "0.0%", "pt-BR" ) & "</b></div>"
+			    & "<div><div class='l'>NPS</div><b>" & FORMAT ( [NPS], "+0;-0", "pt-BR" ) & "</b></div></div>"
+			    & "<div class='s'>Receita digital = f_vendas nos canais Site, App e Delivery. "
+			    & IF ( [OTIF %] < 0.95, "Insight: OTIF abaixo do alvo de 95% — checar prazo prometido.", "Insight: OTIF no alvo." ) & "</div></div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: 386da253-f2f8-55f6-9b79-ebdd51c2a7a5
+
+	measure 'HTML Chips Filtros Digital' =
+			VAR _c = IF ( ISFILTERED ( dCalendario[Ano] ), "<span class='c'><b>Ano</b> " & IF ( COUNTROWS ( VALUES ( dCalendario[Ano] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dCalendario[Ano] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dCalendario[Ano] ), dCalendario[Ano], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dCalendario[Mes Nome] ), "<span class='c'><b>Mês</b> " & IF ( COUNTROWS ( VALUES ( dCalendario[Mes Nome] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dCalendario[Mes Nome] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dCalendario[Mes Nome] ), dCalendario[Mes Nome], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dLoja[Loja] ), "<span class='c'><b>Loja</b> " & IF ( COUNTROWS ( VALUES ( dLoja[Loja] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dLoja[Loja] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dLoja[Loja] ), dLoja[Loja], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dCanal[Canal] ), "<span class='c'><b>Canal</b> " & IF ( COUNTROWS ( VALUES ( dCanal[Canal] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dCanal[Canal] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dCanal[Canal] ), dCanal[Canal], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dDispositivo[Dispositivo] ), "<span class='c'><b>Dispositivo</b> " & IF ( COUNTROWS ( VALUES ( dDispositivo[Dispositivo] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dDispositivo[Dispositivo] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dDispositivo[Dispositivo] ), dDispositivo[Dispositivo], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dOrigemTrafego[Grupo Origem] ), "<span class='c'><b>Origem</b> " & IF ( COUNTROWS ( VALUES ( dOrigemTrafego[Grupo Origem] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dOrigemTrafego[Grupo Origem] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dOrigemTrafego[Grupo Origem] ), dOrigemTrafego[Grupo Origem], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dProduto[Categoria] ), "<span class='c'><b>Categoria</b> " & IF ( COUNTROWS ( VALUES ( dProduto[Categoria] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dProduto[Categoria] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dProduto[Categoria] ), dProduto[Categoria], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dCliente[Segmento RFV] ), "<span class='c'><b>RFV</b> " & IF ( COUNTROWS ( VALUES ( dCliente[Segmento RFV] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dCliente[Segmento RFV] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dCliente[Segmento RFV] ), dCliente[Segmento RFV], ", " ) ) & "</span>" )
+			    & IF ( ISFILTERED ( dIniciativa[Pilar] ), "<span class='c'><b>Pilar</b> " & IF ( COUNTROWS ( VALUES ( dIniciativa[Pilar] ) ) > 3, FORMAT ( COUNTROWS ( VALUES ( dIniciativa[Pilar] ) ), "0" ) & " itens", CONCATENATEX ( VALUES ( dIniciativa[Pilar] ), dIniciativa[Pilar], ", " ) ) & "</span>" )
+			RETURN "<style>.w{font-family:Segoe UI,sans-serif;display:flex;flex-wrap:wrap;gap:6px;align-items:center;height:100%}.c{background:rgba(24,184,159,.16);border:1px solid rgba(24,184,159,.45);color:#DDF5EB;border-radius:20px;padding:3px 10px;font-size:11px;animation:f .4s ease both}.c b{color:#18B89F;font-weight:600;margin-right:3px}.z{color:#9FC9C1;font-size:11px}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='w'>" & IF ( _c = "", "<span class='z'>Canais digitais (Site · App · Delivery) · período completo 01/10/2024 a 30/09/2026</span>", _c ) & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: 72665fe6-4f1c-5572-a990-5d655c0c26dc
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Receita Digital' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Receita Digital] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 5dd71766-9374-5ded-8e26-6b83ef82f1b2
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Share Digital %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Share Digital %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 39b47489-7969-52eb-bba0-982300cb8311
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Taxa Conversão %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Taxa Conversão %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: c4c96bc5-efdf-5b84-9edf-575327176d5c
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark NPS' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [NPS] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 8b41da16-beff-51c7-a3e5-2997e59a6fbc
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark OTIF %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [OTIF %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: e656c6d7-aa0b-59c5-abb6-179aafba96f8
+
+	/// Cards HTML (HTML Content) com valor, comparação, cor semântica e sparkline SVG animada.
+	measure 'HTML KPIs Ecom Home' =
+			VAR _v0 = [Receita Digital]
+			VAR _x0 = "Site · App · Delivery · 24 meses"
+			VAR _c0 = "#18B89F"
+			VAR _s0 = [_Spark Receita Digital]
+			VAR _v1 = [Share Digital %]
+			VAR _x1 = "da receita da rede"
+			VAR _c1 = "#18B89F"
+			VAR _s1 = [_Spark Share Digital %]
+			VAR _v2 = [Taxa Conversão %]
+			VAR _x2 = "pedidos ÷ sessões"
+			VAR _c2 = [Cor Conversão]
+			VAR _s2 = [_Spark Taxa Conversão %]
+			VAR _v3 = [NPS]
+			VAR _x3 = "promotores − detratores"
+			VAR _c3 = [Cor NPS]
+			VAR _s3 = [_Spark NPS]
+			VAR _v4 = [OTIF %]
+			VAR _x4 = "entregue no prazo prometido"
+			VAR _c4 = [Cor OTIF]
+			VAR _s4 = [_Spark OTIF %]
+			RETURN
+			"<style>.g{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;font-family:Segoe UI,sans-serif;padding:2px}.k{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(24,184,159,.28);border-radius:14px;padding:12px 14px 4px 18px;overflow:hidden;animation:up .6s ease both;box-shadow:0 8px 24px rgba(0,0,0,.25)}.k:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 12px var(--c)}.t{font-size:12px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}.v{font-size:25px;font-weight:600;color:#FFFFFF;margin-top:2px;white-space:nowrap}.d{font-size:11px;color:var(--c);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.k svg{width:100%;height:30px;margin-top:2px;display:block}.k polyline{fill:none;stroke:var(--c);stroke-width:2;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:400;animation:dr 1.6s ease forwards .3s;vector-effect:non-scaling-stroke}.k:nth-child(2){animation-delay:.08s}.k:nth-child(3){animation-delay:.16s}.k:nth-child(4){animation-delay:.24s}.k:nth-child(5){animation-delay:.32s}.k:nth-child(6){animation-delay:.4s}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.k,.k polyline{animation:none;stroke-dashoffset:0;opacity:1}}</style><div class='g' style='--n:5'>"
+			    & "<div class='k' style='--c:" & _c0 & "'><div class='t'>Receita digital</div><div class='v'>" & IF ( ISBLANK ( _v0 ), "–", IF ( ABS ( _v0 ) >= 1000000, "R$ " & FORMAT ( _v0 / 1000000, "#,0.00", "pt-BR" ) & " mi", "R$ " & FORMAT ( _v0 / 1000, "#,0.0", "pt-BR" ) & " mil" ) ) & "</div><div class='d'>" & _x0 & "</div>" & IF ( ISBLANK ( _s0 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s0 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c1 & "'><div class='t'>Share digital</div><div class='v'>" & IF ( ISBLANK ( _v1 ), "–", FORMAT ( _v1, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x1 & "</div>" & IF ( ISBLANK ( _s1 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s1 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c2 & "'><div class='t'>Conversão</div><div class='v'>" & IF ( ISBLANK ( _v2 ), "–", FORMAT ( _v2, "0.00%", "pt-BR" ) ) & "</div><div class='d'>" & _x2 & "</div>" & IF ( ISBLANK ( _s2 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s2 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c3 & "'><div class='t'>NPS</div><div class='v'>" & IF ( ISBLANK ( _v3 ), "–", FORMAT ( _v3, "+0.0;-0.0;0.0", "pt-BR" ) ) & "</div><div class='d'>" & _x3 & "</div>" & IF ( ISBLANK ( _s3 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s3 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c4 & "'><div class='t'>OTIF</div><div class='v'>" & IF ( ISBLANK ( _v4 ), "–", FORMAT ( _v4, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x4 & "</div>" & IF ( ISBLANK ( _s4 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s4 & "'/></svg>" ) & "</div>"
+			    & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: 2b6f4478-dedf-52e3-8ede-66d0e602d497
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Lucro Bruto Digital' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Lucro Bruto Digital] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: d63b721d-4ad6-509a-a812-a54a0f0502e0
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Margem Bruta Digital %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Margem Bruta Digital %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 580585ef-9e20-55d4-9881-464e9c6bec3d
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Resultado Digital Simplificado' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Resultado Digital Simplificado] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 33a64e41-f463-52b3-aa71-05a513dd7819
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Ticket Médio Digital' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Ticket Médio Digital] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 5116110a-51ec-5b01-b83d-4ae8d61588c6
+
+	/// Cards HTML (HTML Content) com valor, comparação, cor semântica e sparkline SVG animada.
+	measure 'HTML KPIs Ecom Executiva' =
+			VAR _v0 = [Receita Digital]
+			VAR _d0 = [Receita Digital YoY %]
+			VAR _x0 = IF ( ISBLANK ( _d0 ), "sem base comparável no ano anterior", IF ( _d0 >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( _d0 ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+			VAR _c0 = IF ( ISBLANK ( _d0 ), "#9FC9C1", IF ( _d0 * 1 >= 0, "#18B89F", IF ( _d0 * 1 >= -0.03, "#F2C46D", "#EF9277" ) ) )
+			VAR _s0 = [_Spark Receita Digital]
+			VAR _v1 = [Lucro Bruto Digital]
+			VAR _d1 = [Lucro Bruto Digital YoY %]
+			VAR _x1 = IF ( ISBLANK ( _d1 ), "sem base comparável no ano anterior", IF ( _d1 >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( _d1 ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+			VAR _c1 = IF ( ISBLANK ( _d1 ), "#9FC9C1", IF ( _d1 * 1 >= 0, "#18B89F", IF ( _d1 * 1 >= -0.03, "#F2C46D", "#EF9277" ) ) )
+			VAR _s1 = [_Spark Lucro Bruto Digital]
+			VAR _v2 = [Margem Bruta Digital %]
+			VAR _d2 = [Margem Digital Var pp]
+			VAR _x2 = IF ( ISBLANK ( _d2 ), "sem base comparável no ano anterior", IF ( _d2 >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( _d2 ), "0.0", "pt-BR" ) & " p.p. vs ano anterior" )
+			VAR _c2 = IF ( ISBLANK ( _d2 ), "#9FC9C1", IF ( _d2 * 1 >= 0, "#18B89F", IF ( _d2 * 1 >= -0.5, "#F2C46D", "#EF9277" ) ) )
+			VAR _s2 = [_Spark Margem Bruta Digital %]
+			VAR _v3 = [Resultado Digital Simplificado]
+			VAR _d3 = [Txt Resultado Digital]
+			VAR _x3 = IF ( ISBLANK ( _d3 ), "sem base comparável no ano anterior", _d3 )
+			VAR _c3 = [Cor Resultado Digital]
+			VAR _s3 = [_Spark Resultado Digital Simplificado]
+			VAR _v4 = [Share Digital %]
+			VAR _d4 = [Txt Share Digital]
+			VAR _x4 = IF ( ISBLANK ( _d4 ), "sem base comparável no ano anterior", _d4 )
+			VAR _c4 = [Cor Share Digital]
+			VAR _s4 = [_Spark Share Digital %]
+			VAR _v5 = [Ticket Médio Digital]
+			VAR _d5 = [Ticket Digital YoY %]
+			VAR _x5 = IF ( ISBLANK ( _d5 ), "sem base comparável no ano anterior", IF ( _d5 >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( _d5 ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+			VAR _c5 = IF ( ISBLANK ( _d5 ), "#9FC9C1", IF ( _d5 * 1 >= 0, "#18B89F", IF ( _d5 * 1 >= -0.03, "#F2C46D", "#EF9277" ) ) )
+			VAR _s5 = [_Spark Ticket Médio Digital]
+			RETURN
+			"<style>.g{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;font-family:Segoe UI,sans-serif;padding:2px}.k{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(24,184,159,.28);border-radius:14px;padding:12px 14px 4px 18px;overflow:hidden;animation:up .6s ease both;box-shadow:0 8px 24px rgba(0,0,0,.25)}.k:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 12px var(--c)}.t{font-size:12px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}.v{font-size:25px;font-weight:600;color:#FFFFFF;margin-top:2px;white-space:nowrap}.d{font-size:11px;color:var(--c);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.k svg{width:100%;height:30px;margin-top:2px;display:block}.k polyline{fill:none;stroke:var(--c);stroke-width:2;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:400;animation:dr 1.6s ease forwards .3s;vector-effect:non-scaling-stroke}.k:nth-child(2){animation-delay:.08s}.k:nth-child(3){animation-delay:.16s}.k:nth-child(4){animation-delay:.24s}.k:nth-child(5){animation-delay:.32s}.k:nth-child(6){animation-delay:.4s}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.k,.k polyline{animation:none;stroke-dashoffset:0;opacity:1}}</style><div class='g' style='--n:6'>"
+			    & "<div class='k' style='--c:" & _c0 & "'><div class='t'>Receita digital</div><div class='v'>" & IF ( ISBLANK ( _v0 ), "–", IF ( ABS ( _v0 ) >= 1000000, "R$ " & FORMAT ( _v0 / 1000000, "#,0.00", "pt-BR" ) & " mi", "R$ " & FORMAT ( _v0 / 1000, "#,0.0", "pt-BR" ) & " mil" ) ) & "</div><div class='d'>" & _x0 & "</div>" & IF ( ISBLANK ( _s0 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s0 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c1 & "'><div class='t'>Lucro bruto digital</div><div class='v'>" & IF ( ISBLANK ( _v1 ), "–", IF ( ABS ( _v1 ) >= 1000000, "R$ " & FORMAT ( _v1 / 1000000, "#,0.00", "pt-BR" ) & " mi", "R$ " & FORMAT ( _v1 / 1000, "#,0.0", "pt-BR" ) & " mil" ) ) & "</div><div class='d'>" & _x1 & "</div>" & IF ( ISBLANK ( _s1 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s1 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c2 & "'><div class='t'>Margem bruta digital</div><div class='v'>" & IF ( ISBLANK ( _v2 ), "–", FORMAT ( _v2, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x2 & "</div>" & IF ( ISBLANK ( _s2 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s2 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c3 & "'><div class='t'>Resultado digital simplificado</div><div class='v'>" & IF ( ISBLANK ( _v3 ), "–", IF ( ABS ( _v3 ) >= 1000000, "R$ " & FORMAT ( _v3 / 1000000, "#,0.00", "pt-BR" ) & " mi", "R$ " & FORMAT ( _v3 / 1000, "#,0.0", "pt-BR" ) & " mil" ) ) & "</div><div class='d'>" & _x3 & "</div>" & IF ( ISBLANK ( _s3 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s3 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c4 & "'><div class='t'>Share digital</div><div class='v'>" & IF ( ISBLANK ( _v4 ), "–", FORMAT ( _v4, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x4 & "</div>" & IF ( ISBLANK ( _s4 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s4 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c5 & "'><div class='t'>Ticket médio digital</div><div class='v'>" & IF ( ISBLANK ( _v5 ), "–", "R$ " & FORMAT ( _v5, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x5 & "</div>" & IF ( ISBLANK ( _s5 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s5 & "'/></svg>" ) & "</div>"
+			    & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: 0326ebf1-d993-5e0c-88ab-4ef81bf50aa6
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Sessões' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Sessões] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: f4a05d0d-3deb-5edc-a923-2fec248eadb6
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Taxa Checkout %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Taxa Checkout %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 61d0ea65-491d-5a21-ba4b-e26c9a782407
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Checkout → Pedido %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Checkout → Pedido %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: be0ab466-4c6e-5eda-b643-c1c7d3242807
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Taxa Add to Cart %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Taxa Add to Cart %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: bb01558d-4689-5605-9c7b-99b2b399181d
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Receita por Sessão' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Receita por Sessão] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 709fc3dc-35b9-5a18-8d03-2480d39d9324
+
+	/// Cards HTML (HTML Content) com valor, comparação, cor semântica e sparkline SVG animada.
+	measure 'HTML KPIs Ecom Funil' =
+			VAR _v0 = [Sessões]
+			VAR _d0 = [Sessões YoY %]
+			VAR _x0 = IF ( ISBLANK ( _d0 ), "sem base comparável no ano anterior", IF ( _d0 >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( _d0 ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+			VAR _c0 = IF ( ISBLANK ( _d0 ), "#9FC9C1", IF ( _d0 * 1 >= 0, "#18B89F", IF ( _d0 * 1 >= -0.03, "#F2C46D", "#EF9277" ) ) )
+			VAR _s0 = [_Spark Sessões]
+			VAR _v1 = [Taxa Conversão %]
+			VAR _d1 = [Txt Conversão]
+			VAR _x1 = IF ( ISBLANK ( _d1 ), "sem base comparável no ano anterior", _d1 )
+			VAR _c1 = [Cor Conversão]
+			VAR _s1 = [_Spark Taxa Conversão %]
+			VAR _v2 = [Taxa Checkout %]
+			VAR _x2 = "checkouts ÷ sessões"
+			VAR _c2 = "#18B89F"
+			VAR _s2 = [_Spark Taxa Checkout %]
+			VAR _v3 = [Checkout → Pedido %]
+			VAR _d3 = [Txt Checkout]
+			VAR _x3 = IF ( ISBLANK ( _d3 ), "sem base comparável no ano anterior", _d3 )
+			VAR _c3 = [Txt Neutro]
+			VAR _s3 = [_Spark Checkout → Pedido %]
+			VAR _v4 = [Taxa Add to Cart %]
+			VAR _d4 = [Txt ATC]
+			VAR _x4 = IF ( ISBLANK ( _d4 ), "sem base comparável no ano anterior", _d4 )
+			VAR _c4 = [Txt Neutro]
+			VAR _s4 = [_Spark Taxa Add to Cart %]
+			VAR _v5 = [Receita por Sessão]
+			VAR _x5 = "receita digital ÷ sessões"
+			VAR _c5 = "#18B89F"
+			VAR _s5 = [_Spark Receita por Sessão]
+			RETURN
+			"<style>.g{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;font-family:Segoe UI,sans-serif;padding:2px}.k{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(24,184,159,.28);border-radius:14px;padding:12px 14px 4px 18px;overflow:hidden;animation:up .6s ease both;box-shadow:0 8px 24px rgba(0,0,0,.25)}.k:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 12px var(--c)}.t{font-size:12px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}.v{font-size:25px;font-weight:600;color:#FFFFFF;margin-top:2px;white-space:nowrap}.d{font-size:11px;color:var(--c);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.k svg{width:100%;height:30px;margin-top:2px;display:block}.k polyline{fill:none;stroke:var(--c);stroke-width:2;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:400;animation:dr 1.6s ease forwards .3s;vector-effect:non-scaling-stroke}.k:nth-child(2){animation-delay:.08s}.k:nth-child(3){animation-delay:.16s}.k:nth-child(4){animation-delay:.24s}.k:nth-child(5){animation-delay:.32s}.k:nth-child(6){animation-delay:.4s}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.k,.k polyline{animation:none;stroke-dashoffset:0;opacity:1}}</style><div class='g' style='--n:6'>"
+			    & "<div class='k' style='--c:" & _c0 & "'><div class='t'>Sessões</div><div class='v'>" & IF ( ISBLANK ( _v0 ), "–", IF ( _v0 >= 1000000, FORMAT ( _v0 / 1000000, "#,0.00", "pt-BR" ) & " mi", IF ( _v0 >= 10000, FORMAT ( _v0 / 1000, "#,0.0", "pt-BR" ) & " mil", FORMAT ( _v0, "#,0", "pt-BR" ) ) ) ) & "</div><div class='d'>" & _x0 & "</div>" & IF ( ISBLANK ( _s0 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s0 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c1 & "'><div class='t'>Conversão</div><div class='v'>" & IF ( ISBLANK ( _v1 ), "–", FORMAT ( _v1, "0.00%", "pt-BR" ) ) & "</div><div class='d'>" & _x1 & "</div>" & IF ( ISBLANK ( _s1 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s1 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c2 & "'><div class='t'>Taxa de checkout</div><div class='v'>" & IF ( ISBLANK ( _v2 ), "–", FORMAT ( _v2, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x2 & "</div>" & IF ( ISBLANK ( _s2 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s2 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c3 & "'><div class='t'>Checkout → pedido</div><div class='v'>" & IF ( ISBLANK ( _v3 ), "–", FORMAT ( _v3, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x3 & "</div>" & IF ( ISBLANK ( _s3 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s3 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c4 & "'><div class='t'>Taxa de add to cart</div><div class='v'>" & IF ( ISBLANK ( _v4 ), "–", FORMAT ( _v4, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x4 & "</div>" & IF ( ISBLANK ( _s4 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s4 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c5 & "'><div class='t'>Receita por sessão</div><div class='v'>" & IF ( ISBLANK ( _v5 ), "–", "R$ " & FORMAT ( _v5, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x5 & "</div>" & IF ( ISBLANK ( _s5 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s5 & "'/></svg>" ) & "</div>"
+			    & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: b24d360e-15c5-5728-b873-b945b1e9200d
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark CSAT Médio' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [CSAT Médio] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: d19e84b7-8317-50d0-83da-05a84dc7cb9b
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Prazo Real Médio' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Prazo Real Médio] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 3f710966-5694-5f5a-b068-d6721d5bcaf3
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark % Entregas com Atraso' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [% Entregas com Atraso] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 61ab9d82-de3c-540f-beb6-3a9cd16c07c6
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Frete Médio' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Frete Médio] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 69e8158d-4dc7-5bfb-9ed4-967e11cd1e7d
+
+	/// Cards HTML (HTML Content) com valor, comparação, cor semântica e sparkline SVG animada.
+	measure 'HTML KPIs Ecom CX' =
+			VAR _v0 = [NPS]
+			VAR _d0 = [Txt NPS]
+			VAR _x0 = IF ( ISBLANK ( _d0 ), "sem base comparável no ano anterior", _d0 )
+			VAR _c0 = [Cor NPS]
+			VAR _s0 = [_Spark NPS]
+			VAR _v1 = [CSAT Médio]
+			VAR _x1 = "escala 1 a 5 · alvo 4,5"
+			VAR _c1 = [Cor CSAT]
+			VAR _s1 = [_Spark CSAT Médio]
+			VAR _v2 = [OTIF %]
+			VAR _d2 = [Txt OTIF Meta]
+			VAR _x2 = IF ( ISBLANK ( _d2 ), "sem base comparável no ano anterior", _d2 )
+			VAR _c2 = [Cor OTIF]
+			VAR _s2 = [_Spark OTIF %]
+			VAR _v3 = [Prazo Real Médio]
+			VAR _d3 = [Txt Prazo]
+			VAR _x3 = IF ( ISBLANK ( _d3 ), "sem base comparável no ano anterior", _d3 )
+			VAR _c3 = [Txt Neutro]
+			VAR _s3 = [_Spark Prazo Real Médio]
+			VAR _v4 = [% Entregas com Atraso]
+			VAR _x4 = "pedidos digitais"
+			VAR _c4 = [Cor OTIF]
+			VAR _s4 = [_Spark % Entregas com Atraso]
+			VAR _v5 = [Frete Médio]
+			VAR _d5 = [Txt Frete]
+			VAR _x5 = IF ( ISBLANK ( _d5 ), "sem base comparável no ano anterior", _d5 )
+			VAR _c5 = [Txt Neutro]
+			VAR _s5 = [_Spark Frete Médio]
+			RETURN
+			"<style>.g{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;font-family:Segoe UI,sans-serif;padding:2px}.k{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(24,184,159,.28);border-radius:14px;padding:12px 14px 4px 18px;overflow:hidden;animation:up .6s ease both;box-shadow:0 8px 24px rgba(0,0,0,.25)}.k:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 12px var(--c)}.t{font-size:12px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}.v{font-size:25px;font-weight:600;color:#FFFFFF;margin-top:2px;white-space:nowrap}.d{font-size:11px;color:var(--c);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.k svg{width:100%;height:30px;margin-top:2px;display:block}.k polyline{fill:none;stroke:var(--c);stroke-width:2;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:400;animation:dr 1.6s ease forwards .3s;vector-effect:non-scaling-stroke}.k:nth-child(2){animation-delay:.08s}.k:nth-child(3){animation-delay:.16s}.k:nth-child(4){animation-delay:.24s}.k:nth-child(5){animation-delay:.32s}.k:nth-child(6){animation-delay:.4s}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.k,.k polyline{animation:none;stroke-dashoffset:0;opacity:1}}</style><div class='g' style='--n:6'>"
+			    & "<div class='k' style='--c:" & _c0 & "'><div class='t'>NPS</div><div class='v'>" & IF ( ISBLANK ( _v0 ), "–", FORMAT ( _v0, "+0.0;-0.0;0.0", "pt-BR" ) ) & "</div><div class='d'>" & _x0 & "</div>" & IF ( ISBLANK ( _s0 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s0 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c1 & "'><div class='t'>CSAT médio</div><div class='v'>" & IF ( ISBLANK ( _v1 ), "–", FORMAT ( _v1, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x1 & "</div>" & IF ( ISBLANK ( _s1 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s1 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c2 & "'><div class='t'>OTIF</div><div class='v'>" & IF ( ISBLANK ( _v2 ), "–", FORMAT ( _v2, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x2 & "</div>" & IF ( ISBLANK ( _s2 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s2 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c3 & "'><div class='t'>Prazo real médio</div><div class='v'>" & IF ( ISBLANK ( _v3 ), "–", FORMAT ( _v3, "#,0.0", "pt-BR" ) & " dias" ) & "</div><div class='d'>" & _x3 & "</div>" & IF ( ISBLANK ( _s3 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s3 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c4 & "'><div class='t'>Entregas com atraso</div><div class='v'>" & IF ( ISBLANK ( _v4 ), "–", FORMAT ( _v4, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x4 & "</div>" & IF ( ISBLANK ( _s4 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s4 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c5 & "'><div class='t'>Frete médio</div><div class='v'>" & IF ( ISBLANK ( _v5 ), "–", "R$ " & FORMAT ( _v5, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x5 & "</div>" & IF ( ISBLANK ( _s5 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s5 & "'/></svg>" ) & "</div>"
+			    & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: 896f9c45-8b0a-53cd-bc7b-c20072e62702
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Avaliações' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Avaliações] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 8f06870e-330e-53ba-9ca3-8cf49dad11c2
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Nota Média Produto' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Nota Média Produto] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 2e2b1c66-fc40-57f1-be63-21e576e81472
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark % Avaliações Abaixo de 4' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [% Avaliações Abaixo de 4] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: fe89c9a7-22d9-52ba-91b2-08ed25ee7dcb
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Receita Digital Itens' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Receita Digital Itens] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: af2924ef-0a52-5571-8d3c-64f2401e3dc7
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Margem Digital Itens %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Margem Digital Itens %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: e537595b-f748-55d2-a178-272cf9a06995
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark SKUs Digitais Vendidos' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [SKUs Digitais Vendidos] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 16822558-6506-5d81-85e1-9888fe505c55
+
+	/// Cards HTML (HTML Content) com valor, comparação, cor semântica e sparkline SVG animada.
+	measure 'HTML KPIs Ecom Produtos' =
+			VAR _v0 = [Avaliações]
+			VAR _x0 = "reviews de compras digitais"
+			VAR _c0 = "#18B89F"
+			VAR _s0 = [_Spark Avaliações]
+			VAR _v1 = [Nota Média Produto]
+			VAR _d1 = [Txt Nota]
+			VAR _x1 = IF ( ISBLANK ( _d1 ), "sem base comparável no ano anterior", _d1 )
+			VAR _c1 = [Txt Neutro]
+			VAR _s1 = [_Spark Nota Média Produto]
+			VAR _v2 = [% Avaliações Abaixo de 4]
+			VAR _x2 = "sinal relativo de insatisfação"
+			VAR _c2 = [Txt Neutro]
+			VAR _s2 = [_Spark % Avaliações Abaixo de 4]
+			VAR _v3 = [Receita Digital Itens]
+			VAR _x3 = "f_itens_venda · canais digitais"
+			VAR _c3 = "#18B89F"
+			VAR _s3 = [_Spark Receita Digital Itens]
+			VAR _v4 = [Margem Digital Itens %]
+			VAR _x4 = "receita − CMV de itens"
+			VAR _c4 = "#18B89F"
+			VAR _s4 = [_Spark Margem Digital Itens %]
+			VAR _v5 = [SKUs Digitais Vendidos]
+			VAR _x5 = "de 5.000 no catálogo"
+			VAR _c5 = "#18B89F"
+			VAR _s5 = [_Spark SKUs Digitais Vendidos]
+			RETURN
+			"<style>.g{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;font-family:Segoe UI,sans-serif;padding:2px}.k{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(24,184,159,.28);border-radius:14px;padding:12px 14px 4px 18px;overflow:hidden;animation:up .6s ease both;box-shadow:0 8px 24px rgba(0,0,0,.25)}.k:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 12px var(--c)}.t{font-size:12px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}.v{font-size:25px;font-weight:600;color:#FFFFFF;margin-top:2px;white-space:nowrap}.d{font-size:11px;color:var(--c);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.k svg{width:100%;height:30px;margin-top:2px;display:block}.k polyline{fill:none;stroke:var(--c);stroke-width:2;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:400;animation:dr 1.6s ease forwards .3s;vector-effect:non-scaling-stroke}.k:nth-child(2){animation-delay:.08s}.k:nth-child(3){animation-delay:.16s}.k:nth-child(4){animation-delay:.24s}.k:nth-child(5){animation-delay:.32s}.k:nth-child(6){animation-delay:.4s}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.k,.k polyline{animation:none;stroke-dashoffset:0;opacity:1}}</style><div class='g' style='--n:6'>"
+			    & "<div class='k' style='--c:" & _c0 & "'><div class='t'>Avaliações</div><div class='v'>" & IF ( ISBLANK ( _v0 ), "–", IF ( _v0 >= 1000000, FORMAT ( _v0 / 1000000, "#,0.00", "pt-BR" ) & " mi", IF ( _v0 >= 10000, FORMAT ( _v0 / 1000, "#,0.0", "pt-BR" ) & " mil", FORMAT ( _v0, "#,0", "pt-BR" ) ) ) ) & "</div><div class='d'>" & _x0 & "</div>" & IF ( ISBLANK ( _s0 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s0 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c1 & "'><div class='t'>Nota média</div><div class='v'>" & IF ( ISBLANK ( _v1 ), "–", FORMAT ( _v1, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x1 & "</div>" & IF ( ISBLANK ( _s1 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s1 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c2 & "'><div class='t'>Avaliações abaixo de 4</div><div class='v'>" & IF ( ISBLANK ( _v2 ), "–", FORMAT ( _v2, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x2 & "</div>" & IF ( ISBLANK ( _s2 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s2 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c3 & "'><div class='t'>Receita digital (itens)</div><div class='v'>" & IF ( ISBLANK ( _v3 ), "–", IF ( ABS ( _v3 ) >= 1000000, "R$ " & FORMAT ( _v3 / 1000000, "#,0.00", "pt-BR" ) & " mi", "R$ " & FORMAT ( _v3 / 1000, "#,0.0", "pt-BR" ) & " mil" ) ) & "</div><div class='d'>" & _x3 & "</div>" & IF ( ISBLANK ( _s3 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s3 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c4 & "'><div class='t'>Margem digital (itens)</div><div class='v'>" & IF ( ISBLANK ( _v4 ), "–", FORMAT ( _v4, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x4 & "</div>" & IF ( ISBLANK ( _s4 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s4 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c5 & "'><div class='t'>SKUs vendidos no digital</div><div class='v'>" & IF ( ISBLANK ( _v5 ), "–", IF ( _v5 >= 1000000, FORMAT ( _v5 / 1000000, "#,0.00", "pt-BR" ) & " mi", IF ( _v5 >= 10000, FORMAT ( _v5 / 1000, "#,0.0", "pt-BR" ) & " mil", FORMAT ( _v5, "#,0", "pt-BR" ) ) ) ) & "</div><div class='d'>" & _x5 & "</div>" & IF ( ISBLANK ( _s5 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s5 & "'/></svg>" ) & "</div>"
+			    & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: fc84e74d-64e9-500d-83a7-2b4ef2ef4b64
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Clientes Digitais' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Clientes Digitais] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 61247675-4958-58f4-92b2-7177d1a92d99
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Clientes Digitais Novos' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Clientes Digitais Novos] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 7707781b-6e86-54fc-a7b4-0872cd811079
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Recompra Digital %' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Recompra Digital %] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: f8147aa6-a9b8-5051-bb04-de5a438ca734
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Frequência Digital' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Frequência Digital] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 4bd93a81-1ab9-5fa8-b51e-5d0f682e220e
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Ticket Digital Identificado' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Ticket Digital Identificado] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: b24ce3ef-deaf-5b5b-9a85-315bf19198f9
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark % Clientes Omnichannel' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [% Clientes Omnichannel] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 52b0ab9b-9901-5ef0-99ec-4c46512c9864
+
+	/// Cards HTML (HTML Content) com valor, comparação, cor semântica e sparkline SVG animada.
+	measure 'HTML KPIs Ecom Clientes' =
+			VAR _v0 = [Clientes Digitais]
+			VAR _d0 = [Clientes Digitais YoY %]
+			VAR _x0 = IF ( ISBLANK ( _d0 ), "sem base comparável no ano anterior", IF ( _d0 >= 0, "▲ +", "▼ −" ) & FORMAT ( ABS ( _d0 ), "0.0%", "pt-BR" ) & " vs ano anterior" )
+			VAR _c0 = IF ( ISBLANK ( _d0 ), "#9FC9C1", IF ( _d0 * 1 >= 0, "#18B89F", IF ( _d0 * 1 >= -0.03, "#F2C46D", "#EF9277" ) ) )
+			VAR _s0 = [_Spark Clientes Digitais]
+			VAR _v1 = [Clientes Digitais Novos]
+			VAR _d1 = [Txt Novos Digitais]
+			VAR _x1 = IF ( ISBLANK ( _d1 ), "sem base comparável no ano anterior", _d1 )
+			VAR _c1 = [Txt Neutro]
+			VAR _s1 = [_Spark Clientes Digitais Novos]
+			VAR _v2 = [Recompra Digital %]
+			VAR _x2 = "2+ pedidos digitais no período"
+			VAR _c2 = "#18B89F"
+			VAR _s2 = [_Spark Recompra Digital %]
+			VAR _v3 = [Frequência Digital]
+			VAR _x3 = "pedidos por cliente"
+			VAR _c3 = "#18B89F"
+			VAR _s3 = [_Spark Frequência Digital]
+			VAR _v4 = [Ticket Digital Identificado]
+			VAR _x4 = "clientes identificados"
+			VAR _c4 = "#18B89F"
+			VAR _s4 = [_Spark Ticket Digital Identificado]
+			VAR _v5 = [% Clientes Omnichannel]
+			VAR _d5 = [Txt Omni]
+			VAR _x5 = IF ( ISBLANK ( _d5 ), "sem base comparável no ano anterior", _d5 )
+			VAR _c5 = [Txt Neutro]
+			VAR _s5 = [_Spark % Clientes Omnichannel]
+			RETURN
+			"<style>.g{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;font-family:Segoe UI,sans-serif;padding:2px}.k{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(24,184,159,.28);border-radius:14px;padding:12px 14px 4px 18px;overflow:hidden;animation:up .6s ease both;box-shadow:0 8px 24px rgba(0,0,0,.25)}.k:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 12px var(--c)}.t{font-size:12px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}.v{font-size:25px;font-weight:600;color:#FFFFFF;margin-top:2px;white-space:nowrap}.d{font-size:11px;color:var(--c);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.k svg{width:100%;height:30px;margin-top:2px;display:block}.k polyline{fill:none;stroke:var(--c);stroke-width:2;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:400;animation:dr 1.6s ease forwards .3s;vector-effect:non-scaling-stroke}.k:nth-child(2){animation-delay:.08s}.k:nth-child(3){animation-delay:.16s}.k:nth-child(4){animation-delay:.24s}.k:nth-child(5){animation-delay:.32s}.k:nth-child(6){animation-delay:.4s}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.k,.k polyline{animation:none;stroke-dashoffset:0;opacity:1}}</style><div class='g' style='--n:6'>"
+			    & "<div class='k' style='--c:" & _c0 & "'><div class='t'>Clientes digitais</div><div class='v'>" & IF ( ISBLANK ( _v0 ), "–", IF ( _v0 >= 1000000, FORMAT ( _v0 / 1000000, "#,0.00", "pt-BR" ) & " mi", IF ( _v0 >= 10000, FORMAT ( _v0 / 1000, "#,0.0", "pt-BR" ) & " mil", FORMAT ( _v0, "#,0", "pt-BR" ) ) ) ) & "</div><div class='d'>" & _x0 & "</div>" & IF ( ISBLANK ( _s0 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s0 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c1 & "'><div class='t'>Novos no digital</div><div class='v'>" & IF ( ISBLANK ( _v1 ), "–", IF ( _v1 >= 1000000, FORMAT ( _v1 / 1000000, "#,0.00", "pt-BR" ) & " mi", IF ( _v1 >= 10000, FORMAT ( _v1 / 1000, "#,0.0", "pt-BR" ) & " mil", FORMAT ( _v1, "#,0", "pt-BR" ) ) ) ) & "</div><div class='d'>" & _x1 & "</div>" & IF ( ISBLANK ( _s1 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s1 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c2 & "'><div class='t'>Recompra digital</div><div class='v'>" & IF ( ISBLANK ( _v2 ), "–", FORMAT ( _v2, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x2 & "</div>" & IF ( ISBLANK ( _s2 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s2 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c3 & "'><div class='t'>Frequência digital</div><div class='v'>" & IF ( ISBLANK ( _v3 ), "–", FORMAT ( _v3, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x3 & "</div>" & IF ( ISBLANK ( _s3 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s3 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c4 & "'><div class='t'>Ticket identificado</div><div class='v'>" & IF ( ISBLANK ( _v4 ), "–", "R$ " & FORMAT ( _v4, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x4 & "</div>" & IF ( ISBLANK ( _s4 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s4 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c5 & "'><div class='t'>Clientes omnichannel</div><div class='v'>" & IF ( ISBLANK ( _v5 ), "–", FORMAT ( _v5, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x5 & "</div>" & IF ( ISBLANK ( _s5 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s5 & "'/></svg>" ) & "</div>"
+			    & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: b46314d6-8eab-5a0b-8b78-e868a03f27f5
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark % Conclusão Roadmap' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [% Conclusão Roadmap] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: 393f1f12-24d2-57b5-9383-33b9337db02d
+
+	/// Pontos da sparkline (viewBox 100×30) dos últimos 12 meses.
+	measure '_Spark Mídia por Cliente Novo (proxy CAC)' =
+			VAR _fim = MIN ( CALCULATE ( MAX ( dCalendario[Data] ) ), [_Data Base] )
+			VAR _ini = EDATE ( EOMONTH ( _fim, -1 ) + 1, -11 )
+			VAR _t = CALCULATETABLE (
+			    ADDCOLUMNS ( SUMMARIZE ( FILTER ( ALL ( dCalendario ), dCalendario[Data] >= _ini && dCalendario[Data] <= _fim ), dCalendario[AnoMes Num] ), "@v", [Mídia por Cliente Novo (proxy CAC)] ),
+			    REMOVEFILTERS ( dCalendario ) )
+			VAR _f = FILTER ( _t, NOT ISBLANK ( [@v] ) )
+			VAR _n = COUNTROWS ( _f )
+			VAR _mn = MINX ( _f, [@v] )
+			VAR _mx = MAXX ( _f, [@v] )
+			VAR _r = ADDCOLUMNS ( _f, "@i", RANKX ( _f, dCalendario[AnoMes Num],, ASC ) )
+			RETURN IF ( _n >= 2,
+			    CONCATENATEX ( _r,
+			        FORMAT ( ( [@i] - 1 ) / ( _n - 1 ) * 100, "0.0", "en-US" ) & "," & FORMAT ( 27 - DIVIDE ( [@v] - _mn, _mx - _mn, 0.5 ) * 22, "0.0", "en-US" ),
+			        " ", dCalendario[AnoMes Num], ASC ) )
+		displayFolder: 11 SVG & HTML
+		isHidden
+		lineageTag: aab8c01e-79b5-54d8-a706-13e0180ba78f
+
+	/// Cards HTML (HTML Content) com valor, comparação, cor semântica e sparkline SVG animada.
+	measure 'HTML KPIs Ecom Estratégia' =
+			VAR _v0 = [Score Maturidade Digital]
+			VAR _d0 = [Txt Maturidade]
+			VAR _x0 = IF ( ISBLANK ( _d0 ), "sem base comparável no ano anterior", _d0 )
+			VAR _c0 = [Cor Score]
+			VAR _v1 = [% Conclusão Roadmap]
+			VAR _d1 = [Txt Roadmap]
+			VAR _x1 = IF ( ISBLANK ( _d1 ), "sem base comparável no ano anterior", _d1 )
+			VAR _c1 = [Txt Neutro]
+			VAR _s1 = [_Spark % Conclusão Roadmap]
+			VAR _v2 = [Iniciativas Em Andamento]
+			VAR _x2 = "snapshot do último mês"
+			VAR _c2 = "#18B89F"
+			VAR _v3 = [Taxa de Vitória Testes %]
+			VAR _d3 = [Txt Lift]
+			VAR _x3 = IF ( ISBLANK ( _d3 ), "sem base comparável no ano anterior", _d3 )
+			VAR _c3 = [Txt Neutro]
+			VAR _v4 = [Lift Médio Vencedores]
+			VAR _x4 = "métricas diferentes · não somar"
+			VAR _c4 = "#18B89F"
+			VAR _v5 = [Mídia por Cliente Novo (proxy CAC)]
+			VAR _d5 = [Txt Custo Mídia]
+			VAR _x5 = IF ( ISBLANK ( _d5 ), "sem base comparável no ano anterior", _d5 )
+			VAR _c5 = [Txt Neutro]
+			VAR _s5 = [_Spark Mídia por Cliente Novo (proxy CAC)]
+			RETURN
+			"<style>.g{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;font-family:Segoe UI,sans-serif;padding:2px}.k{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(24,184,159,.28);border-radius:14px;padding:12px 14px 4px 18px;overflow:hidden;animation:up .6s ease both;box-shadow:0 8px 24px rgba(0,0,0,.25)}.k:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 12px var(--c)}.t{font-size:12px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}.v{font-size:25px;font-weight:600;color:#FFFFFF;margin-top:2px;white-space:nowrap}.d{font-size:11px;color:var(--c);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.k svg{width:100%;height:30px;margin-top:2px;display:block}.k polyline{fill:none;stroke:var(--c);stroke-width:2;stroke-linejoin:round;stroke-dasharray:400;stroke-dashoffset:400;animation:dr 1.6s ease forwards .3s;vector-effect:non-scaling-stroke}.k:nth-child(2){animation-delay:.08s}.k:nth-child(3){animation-delay:.16s}.k:nth-child(4){animation-delay:.24s}.k:nth-child(5){animation-delay:.32s}.k:nth-child(6){animation-delay:.4s}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.k,.k polyline{animation:none;stroke-dashoffset:0;opacity:1}}</style><div class='g' style='--n:6'>"
+			    & "<div class='k' style='--c:" & _c0 & "'><div class='t'>Maturidade digital</div><div class='v'>" & IF ( ISBLANK ( _v0 ), "–", IF ( _v0 >= 1000000, FORMAT ( _v0 / 1000000, "#,0.00", "pt-BR" ) & " mi", IF ( _v0 >= 10000, FORMAT ( _v0 / 1000, "#,0.0", "pt-BR" ) & " mil", FORMAT ( _v0, "#,0", "pt-BR" ) ) ) ) & "</div><div class='d'>" & _x0 & "</div>" & "" & "</div>"
+			    & "<div class='k' style='--c:" & _c1 & "'><div class='t'>Conclusão do roadmap</div><div class='v'>" & IF ( ISBLANK ( _v1 ), "–", FORMAT ( _v1, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x1 & "</div>" & IF ( ISBLANK ( _s1 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s1 & "'/></svg>" ) & "</div>"
+			    & "<div class='k' style='--c:" & _c2 & "'><div class='t'>Iniciativas em andamento</div><div class='v'>" & IF ( ISBLANK ( _v2 ), "–", IF ( _v2 >= 1000000, FORMAT ( _v2 / 1000000, "#,0.00", "pt-BR" ) & " mi", IF ( _v2 >= 10000, FORMAT ( _v2 / 1000, "#,0.0", "pt-BR" ) & " mil", FORMAT ( _v2, "#,0", "pt-BR" ) ) ) ) & "</div><div class='d'>" & _x2 & "</div>" & "" & "</div>"
+			    & "<div class='k' style='--c:" & _c3 & "'><div class='t'>Testes A/B vencedores</div><div class='v'>" & IF ( ISBLANK ( _v3 ), "–", FORMAT ( _v3, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x3 & "</div>" & "" & "</div>"
+			    & "<div class='k' style='--c:" & _c4 & "'><div class='t'>Lift médio (vencedores)</div><div class='v'>" & IF ( ISBLANK ( _v4 ), "–", FORMAT ( _v4, "0.0%", "pt-BR" ) ) & "</div><div class='d'>" & _x4 & "</div>" & "" & "</div>"
+			    & "<div class='k' style='--c:" & _c5 & "'><div class='t'>Mídia por cliente novo</div><div class='v'>" & IF ( ISBLANK ( _v5 ), "–", "R$ " & FORMAT ( _v5, "#,0.00", "pt-BR" ) ) & "</div><div class='d'>" & _x5 & "</div>" & IF ( ISBLANK ( _s5 ), "", "<svg viewBox='0 0 100 30' preserveAspectRatio='none'><polyline points='" & _s5 & "'/></svg>" ) & "</div>"
+			    & "</div>"
+		displayFolder: 11 SVG & HTML
+		lineageTag: bd5bda5e-7451-57cb-a5ea-340fc8ef2dfb
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 40029).
+	measure 'Check Pedidos Digitais' = CALCULATE ( [Pedidos Digitais], REMOVEFILTERS () ) - 40029
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: df6bf2b4-a6f5-5931-b0a7-5e3f4b0fde91
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 9774295.05).
+	measure 'Check Receita Digital' = CALCULATE ( [Receita Digital], REMOVEFILTERS () ) - 9774295.05
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: a82e68ae-e83e-5f3e-b142-f05c0a1b5a2a
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 40029).
+	measure 'Check Pedidos Entrega' = CALCULATE ( [Pedidos Entrega], REMOVEFILTERS () ) - 40029
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: 9dd69283-0da7-5653-9959-8f969024d25a
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 1274133).
+	measure 'Check Sessões' = CALCULATE ( [Sessões], REMOVEFILTERS () ) - 1274133
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: 4a0491ac-9f40-5c7c-8805-8f1211f8c536
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 40029).
+	measure 'Check Pedidos (Funil)' = CALCULATE ( [Pedidos (Funil)], REMOVEFILTERS () ) - 40029
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: 6f10eda9-9449-5346-8aab-f4fe1f16ddf8
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 13324).
+	measure 'Check Avaliações' = CALCULATE ( [Avaliações], REMOVEFILTERS () ) - 13324
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: bce980cd-57e0-5f7e-810b-032311bbd743
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 7482).
+	measure 'Check Respostas Pesquisa' = CALCULATE ( [Respostas Pesquisa], REMOVEFILTERS () ) - 7482
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: b6998df7-d6f4-537e-b57e-ad4c549299f4
+
+	/// Deve ser 0 (RESUMO_ECOM.json: 1736490.06).
+	measure 'Check Custo Digital Total' = CALCULATE ( [Custo Digital Total], REMOVEFILTERS () ) - 1736490.06
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: b158944e-4e57-58e4-b593-165fc4a97889
+
+	measure 'Check OTIF 87,8%' = ROUND ( CALCULATE ( [OTIF %], REMOVEFILTERS () ) * 100, 1 ) - 87.8
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 99 Auditoria
+		lineageTag: a2543724-393d-5862-9732-f00e75156130
+
+	measure 'Check NPS +5,9' = ROUND ( CALCULATE ( [NPS], REMOVEFILTERS () ), 1 ) - 5.9
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 99 Auditoria
+		lineageTag: 916e094f-6da7-52e9-a9b2-34d55674af40
+
+	measure 'Check CSAT 4,41' = ROUND ( CALCULATE ( [CSAT Médio], REMOVEFILTERS () ), 2 ) - 4.41
+		formatString: #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: 3b8e40e8-913c-5a26-a03b-e50724c05bcb
+
+	measure 'Check Nota 3,98' = ROUND ( CALCULATE ( [Nota Média Produto], REMOVEFILTERS () ), 2 ) - 3.98
+		formatString: #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: aa001b7c-b216-52f6-b316-f5e5ad3ce6b9
+
+	measure 'Check Conversão 3,14%' = ROUND ( CALCULATE ( [Taxa Conversão %], REMOVEFILTERS () ) * 100, 2 ) - 3.14
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 99 Auditoria
+		lineageTag: 6ffaebbf-418d-59ea-ab28-25eddaa059fa
+
+	/// Deve ser 0 em qualquer filtro de data, loja e canal.
+	measure 'Check Pedidos Funil vs Vendas' = [Pedidos (Funil)] - [Pedidos Digitais]
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: 42b6718b-3578-5811-b50a-706e6f3d84f8
+
+	/// Deve ser 0 em qualquer filtro de data, loja, canal e cliente.
+	measure 'Check Pedidos Entrega vs Vendas' = [Pedidos Entrega] - [Pedidos Digitais]
+		formatString: #,0
+		displayFolder: 99 Auditoria
+		lineageTag: 8920de6d-cbcb-5273-8f37-2781873680e9
+
+	/// Deve ser ~0 sem filtro de produto.
+	measure 'Check Receita Digital Cupom vs Itens' = [Receita Digital] - [Receita Digital Itens]
+		formatString: \R\$ #,0.00;-\R\$ #,0.00;\R\$ #,0.00
+		displayFolder: 99 Auditoria
+		lineageTag: fe330921-07e1-5db1-849f-30142e5083a1
+
+	measure 'HTML Custos Digitais' =
+			VAR _t = [Custo Digital Total]
+			VAR _r = [Receita Digital]
+			RETURN IF ( ISBLANK ( _t ), "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='ft'>Custos digitais são por loja × mês: indisponíveis com filtro de canal, produto ou cliente.</div></div>", "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='h'>Para onde vai o custo digital</div>" & "<div class='r'><span class='l'>Mídia paga</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( [Custo Mídia Paga], _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#EF9277'></i></span><span class='v'>" & "R$ " & FORMAT ( [Custo Mídia Paga] / 1000, "#,0", "pt-BR" ) & " mil" & " · " & FORMAT ( DIVIDE ( [Custo Mídia Paga], _r ), "0.0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>Fulfillment</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( [Custo Fulfillment], _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#F2C46D'></i></span><span class='v'>" & "R$ " & FORMAT ( [Custo Fulfillment] / 1000, "#,0", "pt-BR" ) & " mil" & " · " & FORMAT ( DIVIDE ( [Custo Fulfillment], _r ), "0.0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>Plataforma</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( [Custo Plataforma], _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#DDF5EB'></i></span><span class='v'>" & "R$ " & FORMAT ( [Custo Plataforma] / 1000, "#,0", "pt-BR" ) & " mil" & " · " & FORMAT ( DIVIDE ( [Custo Plataforma], _r ), "0.0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>Outros</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( [Outros Custos Digitais], _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#5FA8A0'></i></span><span class='v'>" & "R$ " & FORMAT ( [Outros Custos Digitais] / 1000, "#,0", "pt-BR" ) & " mil" & " · " & FORMAT ( DIVIDE ( [Outros Custos Digitais], _r ), "0.0%", "pt-BR" ) & "</span></div>" & "<div class='ft'>" & "ROAS proxy <b>" & FORMAT ( [ROAS Proxy], "0.0", "pt-BR" ) & "x</b> · custo por pedido <b>R$ " & FORMAT ( [Custo por Pedido Digital], "#,0.00", "pt-BR" ) & "</b> · valor · % da receita digital" & "</div></div>" )
+		displayFolder: 09 Narrativas
+		lineageTag: 84588aff-5c4b-5776-ad60-9c7041b56b11
+
+	measure 'HTML Status Entrega' =
+			VAR _p = [Pedidos Entrega]
+			RETURN IF ( ISBLANK ( _p ), "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='ft'>Sem dados para os filtros selecionados.</div></div>", "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='h'>Como os pedidos chegam</div>" & "<div class='r'><span class='l'>No prazo</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Entregue no prazo" ), _p ) ) ) * 100, "0.0", "en-US" ) & "%;background:#18B89F'></i></span><span class='v'>" & FORMAT ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Entregue no prazo" ), "#,0", "pt-BR" ) & " · " & FORMAT ( DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Entregue no prazo" ), _p ), "0.0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>Com atraso</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Entregue com atraso" ), _p ) ) ) * 100, "0.0", "en-US" ) & "%;background:#F2C46D'></i></span><span class='v'>" & FORMAT ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Entregue com atraso" ), "#,0", "pt-BR" ) & " · " & FORMAT ( DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Entregue com atraso" ), _p ), "0.0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>Cancelado/problema</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Cancelado / Problema" ), _p ) ) ) * 100, "0.0", "en-US" ) & "%;background:#EF9277'></i></span><span class='v'>" & FORMAT ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Cancelado / Problema" ), "#,0", "pt-BR" ) & " · " & FORMAT ( DIVIDE ( CALCULATE ( [Pedidos Entrega], fPedidosDigitais[Status Entrega] = "Cancelado / Problema" ), _p ), "0.0%", "pt-BR" ) & "</span></div>" & "<div class='ft'>" & "frete grátis em <b>" & FORMAT ( [% Frete Grátis], "0%", "pt-BR" ) & "</b> dos pedidos · taxa de resposta da pesquisa <b>" & FORMAT ( [Taxa de Resposta %], "0.0%", "pt-BR" ) & "</b>" & "</div></div>" )
+		displayFolder: 09 Narrativas
+		lineageTag: c02ec9a5-ad22-538d-ba3d-9a31b626851c
+
+	measure 'HTML Frequência Clientes' =
+			VAR _c = ADDCOLUMNS ( CALCULATETABLE ( VALUES ( fVendas[id_cliente] ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ), fVendas[cliente_identificado] = TRUE () ), "@n", CALCULATE ( COUNTROWS ( fVendas ), KEEPFILTERS ( dCanal[Grupo Canal] = "Digital" ) ) )
+			VAR _t = COUNTROWS ( _c )
+			VAR _f0 = COUNTROWS ( FILTER ( _c, [@n] = 1 ) ) + 0
+			VAR _f1 = COUNTROWS ( FILTER ( _c, [@n] >= 2 && [@n] <= 3 ) ) + 0
+			VAR _f2 = COUNTROWS ( FILTER ( _c, [@n] >= 4 && [@n] <= 6 ) ) + 0
+			VAR _f3 = COUNTROWS ( FILTER ( _c, [@n] >= 7 ) ) + 0
+			RETURN IF ( _t = 0, "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='ft'>Sem dados para os filtros selecionados.</div></div>", "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='h'>Quantas vezes o cliente volta ao digital</div>" & "<div class='r'><span class='l'>1 pedido</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( _f0, _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#9FC9C1'></i></span><span class='v'>" & FORMAT ( _f0, "#,0", "pt-BR" ) & " · " & FORMAT ( DIVIDE ( _f0, _t ), "0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>2 a 3 pedidos</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( _f1, _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#5FA8A0'></i></span><span class='v'>" & FORMAT ( _f1, "#,0", "pt-BR" ) & " · " & FORMAT ( DIVIDE ( _f1, _t ), "0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>4 a 6 pedidos</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( _f2, _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#18B89F'></i></span><span class='v'>" & FORMAT ( _f2, "#,0", "pt-BR" ) & " · " & FORMAT ( DIVIDE ( _f2, _t ), "0%", "pt-BR" ) & "</span></div>" & "<div class='r'><span class='l'>7 ou mais</span><span class='b'><i style='width:" & FORMAT ( MIN ( 1, MAX ( 0, DIVIDE ( _f3, _t ) ) ) * 100, "0.0", "en-US" ) & "%;background:#DDF5EB'></i></span><span class='v'>" & FORMAT ( _f3, "#,0", "pt-BR" ) & " · " & FORMAT ( DIVIDE ( _f3, _t ), "0%", "pt-BR" ) & "</span></div>" & "<div class='ft'>" & "pedidos digitais por cliente identificado no período · base: " & FORMAT ( _t, "#,0", "pt-BR" ) & " clientes" & "</div></div>" )
+		displayFolder: 09 Narrativas
+		lineageTag: 0a166a49-c3d5-50bf-ab92-70c43066d812
+
+	measure 'HTML Próximos Marcos' =
+			VAR _m = [_Mes Roadmap]
+			VAR _t = FILTER ( ADDCOLUMNS ( VALUES ( dIniciativa[Iniciativa] ), "@p", [% Conclusão Roadmap], "@tri", CALCULATE ( MAX ( dIniciativa[Trimestre Alvo] ) ), "@pil", CALCULATE ( MAX ( dIniciativa[Pilar] ) ) ), [@p] < 1 )
+			VAR _l = CONCATENATEX ( TOPN ( 5, _t, [@tri], ASC, [@p], ASC ),
+			    "<div class='r'><span class='l'>" & dIniciativa[Iniciativa] & "</span><span class='b'><i style='width:" & FORMAT ( [@p] * 100, "0", "en-US" ) & "%;background:" & IF ( [@p] < 0.3, "#EF9277", IF ( [@p] < 0.7, "#F2C46D", "#18B89F" ) ) & "'></i></span><span class='v'>" & FORMAT ( [@p], "0%", "pt-BR" ) & " · alvo " & [@tri] & "</span></div>",
+			    "", [@tri], ASC, [@p], ASC )
+			RETURN "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='h'>Próximos marcos: iniciativas abertas por prazo</div>" & IF ( COUNTROWS ( _t ) = 0, "<div class='ft'>Todas as iniciativas do filtro estão concluídas.</div>", _l )
+			    & "<div class='ft'>" & FORMAT ( COUNTROWS ( _t ), "0" ) & " iniciativas abertas em " & FORMAT ( _m, "mm/yyyy" ) & " · coral &lt; 30% · âmbar &lt; 70%</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: 66928813-c0eb-59fe-81b3-f249415caf79
+
+	measure 'HTML Experimentos' =
+			VAR _t = SUMMARIZE ( FILTER ( fExperimentosAB, fExperimentosAB[Resultado Teste] <> "baseline" ), fExperimentosAB[Experimento], fExperimentosAB[Métrica Teste], fExperimentosAB[Resultado Teste], fExperimentosAB[lift] )
+			VAR _mx = MAXX ( _t, fExperimentosAB[lift] )
+			VAR _l = CONCATENATEX ( _t,
+			    "<div class='r'><span class='l'>" & fExperimentosAB[Experimento] & "</span><span class='b'><i style='width:" & FORMAT ( DIVIDE ( fExperimentosAB[lift], _mx ) * 100, "0", "en-US" ) & "%;background:" & IF ( fExperimentosAB[Resultado Teste] = "vencedor", "#18B89F", "#F2C46D" ) & "'></i></span><span class='v'>" & FORMAT ( fExperimentosAB[lift], "+0%", "pt-BR" ) & " · " & SUBSTITUTE ( fExperimentosAB[Métrica Teste], "_", " " ) & "</span></div>",
+			    "", fExperimentosAB[lift], DESC )
+			RETURN "<style>.mp{font-family:Segoe UI,sans-serif;color:#E8F3F1;height:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;animation:f .6s ease both}.mp .h{font-size:12.5px;font-weight:600;color:#DDF5EB;margin-bottom:8px}.mp .r{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}.mp .l{width:112px;color:#9FC9C1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp .b{flex:1;height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}.mp .b i{display:block;height:100%;border-radius:5px;animation:g 1s ease both}.mp .v{width:150px;text-align:right;white-space:nowrap}.mp .ft{font-size:10.5px;color:#9FC9C1;margin-top:8px}.mp .ft b{color:#18B89F}@keyframes g{from{width:0}}@keyframes f{from{opacity:0}to{opacity:1}}</style><div class='mp'><div class='h'>Testes A/B: lift da variante B por métrica</div>" & _l & "<div class='ft'>turquesa = venceu · âmbar = empatou · cada lift mede uma métrica diferente</div></div>"
+		displayFolder: 09 Narrativas
+		lineageTag: d55aaafc-1efa-5361-993a-a5ee72e16c0a
+
+	/// Barra SVG relativa ao maior canal × loja da seleção.
+	measure 'SVG Barra Receita Canal Loja' =
+			VAR _v = [Receita Digital]
+			VAR _mx = MAXX ( CROSSJOIN ( ALLSELECTED ( dCanal[Canal] ), ALLSELECTED ( dLoja[Loja Curta] ) ), CALCULATE ( [Receita Digital] ) )
+			VAR _w = IF ( _mx > 0, MAX ( 2, DIVIDE ( _v, _mx ) * 116 ), 0 )
+			RETURN IF ( NOT ISBLANK ( _v ),
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18'><rect x='0' y='5' width='120' height='8' rx='4' fill='%23FFFFFF' fill-opacity='0.08'/><rect x='0' y='5' width='" & FORMAT ( _w, "0", "en-US" ) & "' height='8' rx='4' fill='%2318B89F'/></svg>" )
+		dataCategory: ImageUrl
+		displayFolder: 11 SVG & HTML
+		lineageTag: 7bc9e3a5-ecc4-59aa-9abf-87ccb919af0f
+
+	column '_'
+		dataType: string
+		isHidden
+		lineageTag: acd47bbe-02f5-563e-966a-1c91129aebe3
+		summarizeBy: none
+		sourceColumn: _
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Medidas = m
+		mode: import
+		source =
+				let
+				    Fonte = #table(type table [_ = text], {})
+				in
+				    Fonte
+
+	annotation PBI_ResultType = Table

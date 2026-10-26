@@ -1,0 +1,92 @@
+/// Custos digitais por loja × mês (não entram no CMV). receita_digital_ref/pedidos_ref da fonte não são carregados: receita vem de fVendas.
+table fCustosDigitais
+	lineageTag: cf2e76a3-91a6-527e-869e-f2f3246b381f
+
+	column ano_mes
+		dataType: string
+		isHidden
+		lineageTag: 9fd4b411-87e0-5c9b-80c3-c4ca10ed4d55
+		summarizeBy: none
+		sourceColumn: ano_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_mes
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		isHidden
+		lineageTag: 540efa81-4177-5bc2-804f-0fcbe3924a38
+		summarizeBy: none
+		sourceColumn: data_mes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column id_loja
+		dataType: string
+		isHidden
+		lineageTag: 0ce44846-0639-5c18-b364-868495b1073a
+		summarizeBy: none
+		sourceColumn: id_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column midia_paga
+		dataType: double
+		isHidden
+		lineageTag: 2c16247d-7da2-504c-8371-388113a58fd3
+		summarizeBy: none
+		sourceColumn: midia_paga
+
+		annotation SummarizationSetBy = Automatic
+
+	column plataforma
+		dataType: double
+		isHidden
+		lineageTag: 7b8b00e1-68aa-5a1e-8fed-9f8d6a1a8ba7
+		summarizeBy: none
+		sourceColumn: plataforma
+
+		annotation SummarizationSetBy = Automatic
+
+	column fulfillment
+		dataType: double
+		isHidden
+		lineageTag: 7330b74a-5a37-5537-a590-9303a937ab94
+		summarizeBy: none
+		sourceColumn: fulfillment
+
+		annotation SummarizationSetBy = Automatic
+
+	column outros_digitais
+		dataType: double
+		isHidden
+		lineageTag: 553f975c-7044-5d95-b904-69c45bc2da9e
+		summarizeBy: none
+		sourceColumn: outros_digitais
+
+		annotation SummarizationSetBy = Automatic
+
+	column custo_digital_total
+		dataType: double
+		isHidden
+		lineageTag: 44416ec3-39a3-5c23-853b-39226c5d234b
+		summarizeBy: none
+		sourceColumn: custo_digital_total
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fCustosDigitais = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\f_custos_digitais_mensais.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"ano_mes", type text}, {"id_loja", type text}, {"midia_paga", type number}, {"plataforma", type number}, {"fulfillment", type number}, {"outros_digitais", type number}, {"custo_digital_total", type number}}, "en-US"),
+				    DataMes = Table.AddColumn(Tipado, "data_mes", each Date.FromText([ano_mes] & "-01"), type date),
+				    Ultimo = DataMes,
+				    Final = Table.SelectColumns(Ultimo, {"ano_mes", "data_mes", "id_loja", "midia_paga", "plataforma", "fulfillment", "outros_digitais", "custo_digital_total"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

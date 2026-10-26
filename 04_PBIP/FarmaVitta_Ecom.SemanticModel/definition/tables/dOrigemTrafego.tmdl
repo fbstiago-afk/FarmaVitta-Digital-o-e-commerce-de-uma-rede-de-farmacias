@@ -1,0 +1,51 @@
+/// Origens de tráfego (9) em 4 grupos.
+table dOrigemTrafego
+	lineageTag: c60b91d9-a3e9-50f7-967c-528c879df56f
+
+	column id_origem
+		dataType: string
+		isHidden
+		lineageTag: 4cd383a0-99a5-589d-b88b-4d6c88f41343
+		summarizeBy: none
+		sourceColumn: id_origem
+
+		annotation SummarizationSetBy = Automatic
+
+	column Origem
+		dataType: string
+		lineageTag: 9dddca02-0512-53eb-acf8-a851fd50b93a
+		summarizeBy: none
+		sourceColumn: nome
+		sortByColumn: 'Ordem Origem'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Grupo Origem'
+		dataType: string
+		lineageTag: e64bcc92-f201-5e1c-bd04-a2fd4964bdaf
+		summarizeBy: none
+		sourceColumn: grupo
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ordem Origem'
+		dataType: int64
+		isHidden
+		lineageTag: 9650a25b-c720-5f22-96f4-866fef859842
+		summarizeBy: none
+		sourceColumn: ordem
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dOrigemTrafego = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\dim_origem_trafego.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_origem", type text}, {"nome", type text}, {"grupo", type text}, {"ordem", Int64.Type}}, "en-US"),
+				    Ultimo = Tipado,
+				    Final = Table.SelectColumns(Ultimo, {"id_origem", "nome", "grupo", "ordem"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

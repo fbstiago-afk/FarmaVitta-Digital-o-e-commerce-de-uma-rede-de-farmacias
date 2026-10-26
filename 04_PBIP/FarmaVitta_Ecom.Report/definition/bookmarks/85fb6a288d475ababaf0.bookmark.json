@@ -1,0 +1,81 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/1.4.0/schema.json",
+  "displayName": "Clientes & Retenção · filtros abrir",
+  "name": "85fb6a288d475ababaf0",
+  "options": {
+    "applyOnlyToTargetVisuals": true,
+    "targetVisualNames": [
+      "7887e9dc50b857369642",
+      "fcd9e89e3d3a5ff49540",
+      "965a6314364553a5ac5c",
+      "903c6fb905595e55a6a5",
+      "b13374c5a251502a8c85",
+      "2b8db185db63519b8903",
+      "df9c1a51f585536ea3e9",
+      "6260d9c8f221591db2de",
+      "8c3a3a4e6bfd5aa0b693",
+      "5e47884234305623b63f"
+    ],
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.3",
+    "activeSection": "11d8996ab8595cd8b0c2",
+    "sections": {
+      "11d8996ab8595cd8b0c2": {
+        "visualContainers": {
+          "7887e9dc50b857369642": {
+            "singleVisual": {
+              "visualType": "shape"
+            }
+          },
+          "fcd9e89e3d3a5ff49540": {
+            "singleVisual": {
+              "visualType": "textbox"
+            }
+          },
+          "965a6314364553a5ac5c": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          },
+          "903c6fb905595e55a6a5": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "b13374c5a251502a8c85": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "2b8db185db63519b8903": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "df9c1a51f585536ea3e9": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "6260d9c8f221591db2de": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "8c3a3a4e6bfd5aa0b693": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          },
+          "5e47884234305623b63f": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          }
+        }
+      }
+    }
+  }
+}

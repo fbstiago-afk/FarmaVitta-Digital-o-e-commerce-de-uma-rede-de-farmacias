@@ -1,0 +1,49 @@
+/// Motivo principal declarado na pesquisa (20).
+table dMotivoSatisfacao
+	lineageTag: ecd0ac38-88bf-5778-80ce-bc87e98c23a1
+
+	column id_motivo
+		dataType: string
+		isHidden
+		lineageTag: e114f706-1e24-530e-9294-394332b88e28
+		summarizeBy: none
+		sourceColumn: id_motivo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Motivo
+		dataType: string
+		lineageTag: 4be6f775-a7f2-5816-aaef-cbe6096ab12d
+		summarizeBy: none
+		sourceColumn: descricao
+
+		annotation SummarizationSetBy = Automatic
+
+	column Polaridade
+		dataType: string
+		lineageTag: 7582f3a1-cd49-5ca0-b569-82c53855f9b1
+		summarizeBy: none
+		sourceColumn: polaridade
+
+		annotation SummarizationSetBy = Automatic
+
+	column Eixo
+		dataType: string
+		lineageTag: fe254fb4-f402-5ebc-8817-e3868e6b532d
+		summarizeBy: none
+		sourceColumn: eixo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dMotivoSatisfacao = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\dim_motivo_satisfacao.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_motivo", type text}, {"descricao", type text}, {"polaridade", type text}, {"eixo", type text}}, "en-US"),
+				    Ultimo = Tipado,
+				    Final = Table.SelectColumns(Ultimo, {"id_motivo", "descricao", "polaridade", "eixo"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

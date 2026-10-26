@@ -1,0 +1,57 @@
+/// Iniciativas do roadmap digital (15). Status = situação final informada no cadastro.
+table dIniciativa
+	lineageTag: 96613f34-a482-5d37-a989-d8d43493518c
+
+	column id_iniciativa
+		dataType: string
+		isHidden
+		lineageTag: c2637071-3c33-592b-b05a-c8b798d981ea
+		summarizeBy: none
+		sourceColumn: id_iniciativa
+
+		annotation SummarizationSetBy = Automatic
+
+	column Iniciativa
+		dataType: string
+		lineageTag: f274d9f4-deba-528f-adc5-bcad9e40023d
+		summarizeBy: none
+		sourceColumn: nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column Pilar
+		dataType: string
+		lineageTag: beaffb24-f280-5d84-8260-f5d2bd4e82f7
+		summarizeBy: none
+		sourceColumn: pilar
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Status Iniciativa'
+		dataType: string
+		lineageTag: 11bce2b9-ebcc-5dca-9d20-09cfb6c4b38c
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Trimestre Alvo'
+		dataType: string
+		lineageTag: eb4ef33c-d0b4-51aa-9f32-b5645b2ef522
+		summarizeBy: none
+		sourceColumn: trimestre_alvo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dIniciativa = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\dim_iniciativa.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_iniciativa", type text}, {"nome", type text}, {"pilar", type text}, {"status", type text}, {"trimestre_alvo", type text}}, "en-US"),
+				    Ultimo = Tipado,
+				    Final = Table.SelectColumns(Ultimo, {"id_iniciativa", "nome", "pilar", "status", "trimestre_alvo"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

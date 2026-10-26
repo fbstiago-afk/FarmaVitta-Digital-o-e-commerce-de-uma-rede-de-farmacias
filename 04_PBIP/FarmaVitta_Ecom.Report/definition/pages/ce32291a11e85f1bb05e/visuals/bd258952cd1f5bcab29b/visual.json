@@ -1,0 +1,286 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "bd258952cd1f5bcab29b",
+  "position": {
+    "x": 254,
+    "y": 276,
+    "z": 1220,
+    "height": 408,
+    "width": 1028,
+    "tabOrder": 1220
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dIniciativa"
+                    }
+                  },
+                  "Property": "Iniciativa"
+                }
+              },
+              "queryRef": "dIniciativa.Iniciativa",
+              "nativeQueryRef": "Iniciativa",
+              "displayName": "ini"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dIniciativa"
+                    }
+                  },
+                  "Property": "Pilar"
+                }
+              },
+              "queryRef": "dIniciativa.Pilar",
+              "nativeQueryRef": "Pilar",
+              "displayName": "pilar"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dIniciativa"
+                    }
+                  },
+                  "Property": "Trimestre Alvo"
+                }
+              },
+              "queryRef": "dIniciativa.Trimestre Alvo",
+              "nativeQueryRef": "Trimestre Alvo",
+              "displayName": "tri"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "% Conclusão Roadmap"
+                }
+              },
+              "queryRef": "_Medidas.% Conclusão Roadmap",
+              "nativeQueryRef": "% Conclusão Roadmap",
+              "displayName": "pct"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Status Roadmap Atual"
+                }
+              },
+              "queryRef": "_Medidas.Status Roadmap Atual",
+              "nativeQueryRef": "Status Roadmap Atual",
+              "displayName": "st"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\":\"https://vega.github.io/schema/vega-lite/v5.json\",\"data\":{\"name\":\"dataset\"},\"width\":\"container\",\"height\":\"container\",\"encoding\":{\"y\":{\"field\":\"ini\",\"type\":\"nominal\",\"sort\":{\"field\":\"pct\",\"op\":\"max\",\"order\":\"descending\"},\"axis\":{\"title\":null,\"labelLimit\":230}}},\"layer\":[{\"transform\":[{\"calculate\":\"1\",\"as\":\"one\"}],\"mark\":{\"type\":\"bar\",\"cornerRadius\":4,\"height\":{\"band\":0.7},\"color\":\"rgba(255,255,255,0.07)\"},\"encoding\":{\"x\":{\"field\":\"one\",\"type\":\"quantitative\",\"scale\":{\"domain\":[0,1]}}}},{\"mark\":{\"type\":\"bar\",\"cornerRadius\":4,\"height\":{\"band\":0.7}},\"encoding\":{\"x\":{\"field\":\"pct\",\"type\":\"quantitative\",\"scale\":{\"domain\":[0,1]},\"axis\":{\"title\":null,\"format\":\".0%\",\"grid\":false}},\"color\":{\"field\":\"pilar\",\"type\":\"nominal\",\"scale\":{\"domain\":[\"Conversão\",\"CX\",\"Produto\",\"Operação\",\"Estratégia\"],\"range\":[\"#18B89F\",\"#DDF5EB\",\"#F2C46D\",\"#EF9277\",\"#5FA8A0\"]},\"legend\":{\"title\":null}},\"tooltip\":[{\"field\":\"ini\",\"title\":\"Iniciativa\"},{\"field\":\"pilar\",\"title\":\"Pilar\"},{\"field\":\"pct\",\"title\":\"% conclusão\",\"format\":\".0%\"},{\"field\":\"st\",\"title\":\"Status (último mês)\"},{\"field\":\"tri\",\"title\":\"Trimestre-alvo\"}]}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"dx\":4,\"fontSize\":10,\"color\":\"#E8F3F1\"},\"encoding\":{\"x\":{\"field\":\"pct\",\"type\":\"quantitative\"},\"text\":{\"field\":\"pct\",\"format\":\".0%\"}}}]}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"view\":{\"stroke\":\"transparent\"},\"background\":\"transparent\",\"font\":\"Segoe UI\",\"padding\":4,\"axis\":{\"labelColor\":\"#9FC9C1\",\"titleColor\":\"#9FC9C1\",\"gridColor\":\"rgba(255,255,255,0.07)\",\"domainColor\":\"rgba(255,255,255,0.15)\",\"tickColor\":\"rgba(255,255,255,0.15)\",\"labelFontSize\":10,\"titleFontSize\":10,\"titleFontWeight\":\"normal\"},\"legend\":{\"labelColor\":\"#E8F3F1\",\"titleColor\":\"#9FC9C1\",\"orient\":\"top\",\"labelFontSize\":10,\"symbolSize\":80},\"text\":{\"color\":\"#E8F3F1\",\"fontSize\":10},\"locale\":{\"number\":{\"decimal\":\",\",\"thousands\":\".\",\"grouping\":[3],\"currency\":[\"R$ \",\"\"]}}}'"
+                }
+              }
+            },
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "enableHighlight": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Roadmap digital: conclusão por iniciativa'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#DDF5EB'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI Semibold'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Snapshot do último mês do filtro · cor = pilar'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#9FC9C1'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

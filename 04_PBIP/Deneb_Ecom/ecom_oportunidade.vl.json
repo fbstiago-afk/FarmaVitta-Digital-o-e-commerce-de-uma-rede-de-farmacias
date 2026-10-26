@@ -1,0 +1,180 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "name": "dataset"
+  },
+  "width": "container",
+  "height": "container",
+  "transform": [
+    {
+      "filter": "datum.aval >= 20"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "median",
+          "field": "un",
+          "as": "mun"
+        },
+        {
+          "op": "median",
+          "field": "baixa",
+          "as": "mba"
+        }
+      ]
+    },
+    {
+      "calculate": "datum.un >= datum.mun && datum.baixa > datum.mba && datum.baixa > 0 ? 'Prioridade: volume alto + insatisfação' : 'Demais'",
+      "as": "quad"
+    }
+  ],
+  "layer": [
+    {
+      "mark": {
+        "type": "circle",
+        "opacity": 0.85,
+        "stroke": "#071E23",
+        "strokeWidth": 1
+      },
+      "encoding": {
+        "x": {
+          "field": "un",
+          "type": "quantitative",
+          "axis": {
+            "title": "unidades vendidas no digital"
+          },
+          "scale": {
+            "zero": false
+          }
+        },
+        "y": {
+          "field": "baixa",
+          "type": "quantitative",
+          "axis": {
+            "title": "% avaliações abaixo de 4",
+            "format": ".1%"
+          },
+          "scale": {
+            "zero": false
+          }
+        },
+        "size": {
+          "field": "aval",
+          "type": "quantitative",
+          "scale": {
+            "range": [
+              60,
+              700
+            ]
+          },
+          "legend": null
+        },
+        "color": {
+          "field": "quad",
+          "type": "nominal",
+          "scale": {
+            "domain": [
+              "Prioridade: volume alto + insatisfação",
+              "Demais"
+            ],
+            "range": [
+              "#EF9277",
+              "#18B89F"
+            ]
+          },
+          "legend": {
+            "title": null
+          }
+        },
+        "tooltip": [
+          {
+            "field": "sub",
+            "title": "Subcategoria"
+          },
+          {
+            "field": "cat",
+            "title": "Categoria"
+          },
+          {
+            "field": "un",
+            "title": "Unidades digitais",
+            "format": ",.0f"
+          },
+          {
+            "field": "aval",
+            "title": "Avaliações",
+            "format": ",.0f"
+          },
+          {
+            "field": "baixa",
+            "title": "% abaixo de 4",
+            "format": ".1%"
+          },
+          {
+            "field": "nota",
+            "title": "Nota média",
+            "format": ".2f"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.baixa > 0"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "fontSize": 9,
+        "dy": -12,
+        "color": "#9FC9C1"
+      },
+      "encoding": {
+        "x": {
+          "field": "un",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "baixa",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "sub"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "rule",
+        "color": "rgba(255,255,255,0.25)",
+        "strokeDash": [
+          4,
+          3
+        ]
+      },
+      "encoding": {
+        "x": {
+          "aggregate": "median",
+          "field": "un"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "rule",
+        "color": "rgba(255,255,255,0.25)",
+        "strokeDash": [
+          4,
+          3
+        ]
+      },
+      "encoding": {
+        "y": {
+          "aggregate": "median",
+          "field": "baixa"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+/// Etapas do funil (desconectada). Add to cart fica fora: na base, checkouts > add to cart em todos os meses (ver GATE A).
+table dEtapaFunil
+	lineageTag: bd0f1127-aeb9-53d1-88ab-6bffd173dcef
+
+	column 'Ordem Etapa'
+		dataType: int64
+		isHidden
+		lineageTag: d9da95f3-9fc3-5e6e-a8a7-83f8601b9310
+		summarizeBy: none
+		sourceColumn: Ordem Etapa
+
+		annotation SummarizationSetBy = Automatic
+
+	column Etapa
+		dataType: string
+		lineageTag: e4d41f83-153f-57c1-a71b-b9a0b0e07c9e
+		summarizeBy: none
+		sourceColumn: Etapa
+		sortByColumn: 'Ordem Etapa'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dEtapaFunil = m
+		mode: import
+		source =
+				let
+				    Fonte = #table(type table [Ordem Etapa = Int64.Type, Etapa = text], {{1, "Sessões"}, {2, "Checkout iniciado"}, {3, "Pedido"}})
+				in
+				    Fonte
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,5 @@
+﻿id_dispositivo;nome;tipo;ordem
+D01;Mobile;Mobile;1
+D02;Desktop;Desktop;2
+D03;App Nativo;App;3
+D04;Tablet;Mobile;4

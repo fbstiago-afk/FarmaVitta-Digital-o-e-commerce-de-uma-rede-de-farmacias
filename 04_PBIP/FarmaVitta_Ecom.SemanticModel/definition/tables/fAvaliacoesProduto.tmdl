@@ -1,0 +1,110 @@
+/// Reviews de produto (1 por cliente × produto, amostra). ATENÇÃO: a base só tem notas 3 e 4 (ver GATE A). Loja herdada do cupom.
+table fAvaliacoesProduto
+	lineageTag: 2f528bf9-d24a-55b2-bf94-477de519dad7
+
+	column id_avaliacao
+		dataType: string
+		isHidden
+		lineageTag: ff3b370f-fd06-5a5a-927b-f4d46df86bbc
+		summarizeBy: none
+		sourceColumn: id_avaliacao
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_cliente
+		dataType: string
+		isHidden
+		lineageTag: fc817bb8-2a1e-51a8-ba63-6bad6815ee27
+		summarizeBy: none
+		sourceColumn: id_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_produto
+		dataType: string
+		isHidden
+		lineageTag: 2f067414-f767-5d03-aa86-e2c693e89049
+		summarizeBy: none
+		sourceColumn: id_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_venda
+		dataType: string
+		isHidden
+		lineageTag: d0659272-32bd-51ec-b246-d3d462e3fa74
+		summarizeBy: none
+		sourceColumn: id_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_avaliacao
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		isHidden
+		lineageTag: 12f36abd-8013-527b-9fee-35194088c6f8
+		summarizeBy: none
+		sourceColumn: data_avaliacao
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Nota
+		dataType: int64
+		lineageTag: f2c1029a-2d28-59b6-a311-60c3bd5d7efd
+		summarizeBy: none
+		sourceColumn: nota
+
+		annotation SummarizationSetBy = Automatic
+
+	column Comentário
+		dataType: string
+		lineageTag: 50d72a8f-1e62-5edd-be87-0f0961cf7eee
+		summarizeBy: none
+		sourceColumn: comentario_curto
+
+		annotation SummarizationSetBy = Automatic
+
+	column verificado
+		dataType: int64
+		isHidden
+		lineageTag: 5b4d35f7-682a-5b08-98dc-80ed011e9d82
+		summarizeBy: none
+		sourceColumn: verificado
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal_avaliacao
+		dataType: string
+		isHidden
+		lineageTag: 4cd8bdd7-77d3-5018-94dc-fca002124a94
+		summarizeBy: none
+		sourceColumn: canal_avaliacao
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_loja
+		dataType: string
+		isHidden
+		lineageTag: 7e30c9d0-c330-5a89-b8cc-ff83a4ed7585
+		summarizeBy: none
+		sourceColumn: id_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fAvaliacoesProduto = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\f_avaliacoes_produto.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_avaliacao", type text}, {"id_cliente", type text}, {"id_produto", type text}, {"id_venda", type text}, {"data_avaliacao", type date}, {"nota", Int64.Type}, {"comentario_curto", type text}, {"verificado", Int64.Type}, {"canal_avaliacao", type text}}, "en-US"),
+				    Cupom = Table.Buffer(Table.SelectColumns(fnCsv("01_Dados_Originais\base_original\f_vendas.csv"), {"id_venda", "id_loja"})),
+				    J = Table.NestedJoin(Tipado, "id_venda", Cupom, "id_venda", "v", JoinKind.LeftOuter),
+				    E = Table.ExpandTableColumn(J, "v", {"id_loja"}),
+				    Ultimo = E,
+				    Final = Table.SelectColumns(Ultimo, {"id_avaliacao", "id_cliente", "id_produto", "id_venda", "data_avaliacao", "nota", "comentario_curto", "verificado", "canal_avaliacao", "id_loja"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

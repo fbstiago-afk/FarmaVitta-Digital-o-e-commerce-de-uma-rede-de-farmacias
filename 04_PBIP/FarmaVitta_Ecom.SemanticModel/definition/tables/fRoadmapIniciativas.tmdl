@@ -1,0 +1,73 @@
+/// Progresso mensal das iniciativas. O % não é monotônico na fonte: as medidas usam o último mês do filtro (snapshot), nunca média de meses.
+table fRoadmapIniciativas
+	lineageTag: ad878aef-32e4-58df-b39c-b2d74fe5cbbc
+
+	column id_iniciativa
+		dataType: string
+		isHidden
+		lineageTag: c7e857ea-6676-5356-96e1-816256466770
+		summarizeBy: none
+		sourceColumn: id_iniciativa
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano_mes
+		dataType: string
+		isHidden
+		lineageTag: 812be241-bd02-55de-8be2-7897c5adaaf2
+		summarizeBy: none
+		sourceColumn: ano_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_mes
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		isHidden
+		lineageTag: a71abc16-0c2a-558a-85bb-b30c6f0ec82a
+		summarizeBy: none
+		sourceColumn: data_mes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column pct_conclusao
+		dataType: double
+		isHidden
+		lineageTag: 9eb888a2-4927-5a87-8b73-169660a26a0d
+		summarizeBy: none
+		sourceColumn: pct_conclusao
+
+		annotation SummarizationSetBy = Automatic
+
+	column impacto_estimado_receita_pct
+		dataType: double
+		isHidden
+		lineageTag: de3cc449-44d7-5a54-8155-81f5dc1c1a98
+		summarizeBy: none
+		sourceColumn: impacto_estimado_receita_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Status Mês'
+		dataType: string
+		lineageTag: d26565a8-6725-5428-a78d-1a9113ae8c25
+		summarizeBy: none
+		sourceColumn: status_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fRoadmapIniciativas = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\f_roadmap_iniciativas.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_iniciativa", type text}, {"ano_mes", type text}, {"pct_conclusao", type number}, {"impacto_estimado_receita_pct", type number}, {"status_mes", type text}}, "en-US"),
+				    DataMes = Table.AddColumn(Tipado, "data_mes", each Date.FromText([ano_mes] & "-01"), type date),
+				    Ultimo = DataMes,
+				    Final = Table.SelectColumns(Ultimo, {"id_iniciativa", "ano_mes", "data_mes", "pct_conclusao", "impacto_estimado_receita_pct", "status_mes"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

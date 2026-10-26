@@ -1,0 +1,120 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/1.4.0/schema.json",
+  "displayName": "Funil & Conversão · filtros fechar",
+  "name": "a14ea72ed83d57f48fe5",
+  "options": {
+    "applyOnlyToTargetVisuals": true,
+    "targetVisualNames": [
+      "302cd42279b75e11b390",
+      "ba28f3beaeca5ef8a775",
+      "8f303dc436025cad9f39",
+      "2eb870aa3f2951c6b48e",
+      "96b4b536615c5a6c99b6",
+      "d6fc12b248ff55a0be9a",
+      "8b41a3c746bb5f0691c7",
+      "00a40e26f9535246a35a",
+      "544bebe51a875ccea072",
+      "3215588a4cb15cd5afd4",
+      "4779ba978723548c9cf8"
+    ],
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.3",
+    "activeSection": "a68c745902c35b32b06e",
+    "sections": {
+      "a68c745902c35b32b06e": {
+        "visualContainers": {
+          "302cd42279b75e11b390": {
+            "singleVisual": {
+              "visualType": "shape",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "ba28f3beaeca5ef8a775": {
+            "singleVisual": {
+              "visualType": "textbox",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "8f303dc436025cad9f39": {
+            "singleVisual": {
+              "visualType": "actionButton",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "2eb870aa3f2951c6b48e": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "96b4b536615c5a6c99b6": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "d6fc12b248ff55a0be9a": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "8b41a3c746bb5f0691c7": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "00a40e26f9535246a35a": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "544bebe51a875ccea072": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "3215588a4cb15cd5afd4": {
+            "singleVisual": {
+              "visualType": "actionButton",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "4779ba978723548c9cf8": {
+            "singleVisual": {
+              "visualType": "actionButton",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

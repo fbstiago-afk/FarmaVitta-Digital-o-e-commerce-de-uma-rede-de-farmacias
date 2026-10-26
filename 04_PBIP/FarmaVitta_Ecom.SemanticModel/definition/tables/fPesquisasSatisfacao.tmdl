@@ -1,0 +1,127 @@
+/// Pesquisas pós-compra (NPS 0–10, CSAT 1–5, motivo principal).
+table fPesquisasSatisfacao
+	lineageTag: 943d6150-cd9a-57c7-b01b-f1f21d4b3287
+
+	column id_pesquisa
+		dataType: string
+		isHidden
+		lineageTag: 2001ae66-1598-51cc-bbd7-d200a9c846f0
+		summarizeBy: none
+		sourceColumn: id_pesquisa
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_cliente
+		dataType: string
+		isHidden
+		lineageTag: 26eb887e-3ade-5368-880c-291c490a48e8
+		summarizeBy: none
+		sourceColumn: id_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_venda
+		dataType: string
+		isHidden
+		lineageTag: 5a2e8842-da75-513c-b90e-3da10d243830
+		summarizeBy: none
+		sourceColumn: id_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_pesquisa
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		isHidden
+		lineageTag: 633200b3-d1f7-514d-b628-fbc5b976ef91
+		summarizeBy: none
+		sourceColumn: data_pesquisa
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column canal
+		dataType: string
+		isHidden
+		lineageTag: 114ded01-6bb1-53fa-896e-f9fc81b06fbc
+		summarizeBy: none
+		sourceColumn: canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_loja
+		dataType: string
+		isHidden
+		lineageTag: a4d2e7eb-3352-5386-9a0a-f600516a06da
+		summarizeBy: none
+		sourceColumn: id_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column nps_score
+		dataType: int64
+		isHidden
+		lineageTag: e471787e-6329-503b-ab02-0bc9a44e72ad
+		summarizeBy: none
+		sourceColumn: nps_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column CSAT
+		dataType: int64
+		lineageTag: f4c096bf-8bd7-51c1-9969-a55dd1e4846d
+		summarizeBy: none
+		sourceColumn: csat_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_motivo_principal
+		dataType: string
+		isHidden
+		lineageTag: f83e2aa5-6c8a-56bc-9289-65db84253848
+		summarizeBy: none
+		sourceColumn: id_motivo_principal
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Canal Pesquisa'
+		dataType: string
+		lineageTag: 6217e23f-bde8-5705-845c-7d76a403fdae
+		summarizeBy: none
+		sourceColumn: canal_pesquisa
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Classe NPS'
+		dataType: string
+		lineageTag: 6a9521c3-efe7-5077-bf3f-56b45fb56e24
+		summarizeBy: none
+		sourceColumn: Classe NPS
+		sortByColumn: 'Ordem Classe NPS'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ordem Classe NPS'
+		dataType: int64
+		isHidden
+		lineageTag: 29e1b01a-aafc-5306-a0a9-d9c2e67fa579
+		summarizeBy: none
+		sourceColumn: Ordem Classe NPS
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fPesquisasSatisfacao = m
+		mode: import
+		source =
+				let
+				    Fonte = fnCsv("01_Dados_Originais\base_complementar_ecommerce\f_pesquisas_satisfacao.csv"),
+				    Tipado = Table.TransformColumnTypes(Fonte, {{"id_pesquisa", type text}, {"id_cliente", type text}, {"id_venda", type text}, {"data_pesquisa", type date}, {"canal", type text}, {"id_loja", type text}, {"nps_score", Int64.Type}, {"csat_score", Int64.Type}, {"id_motivo_principal", type text}, {"canal_pesquisa", type text}}, "en-US"),
+				    Classe = Table.AddColumn(Tipado, "Classe NPS", each if [nps_score] >= 9 then "Promotor" else if [nps_score] >= 7 then "Neutro" else "Detrator", type text),
+				    Ordem = Table.AddColumn(Classe, "Ordem Classe NPS", each if [nps_score] >= 9 then 1 else if [nps_score] >= 7 then 2 else 3, Int64.Type),
+				    Ultimo = Ordem,
+				    Final = Table.SelectColumns(Ultimo, {"id_pesquisa", "id_cliente", "id_venda", "data_pesquisa", "canal", "id_loja", "nps_score", "csat_score", "id_motivo_principal", "canal_pesquisa", "Classe NPS", "Ordem Classe NPS"})
+				in
+				    Final
+
+	annotation PBI_ResultType = Table

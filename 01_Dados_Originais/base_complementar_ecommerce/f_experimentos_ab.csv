@@ -1,0 +1,15 @@
+﻿id_experimento;nome_experimento;variante;data_inicio;data_fim;metrica;valor;lift;resultado
+E01;Checkout 1-clique;A - Controle;2025-03-01;2025-04-15;conversao;0.02;0.00;baseline
+E01;Checkout 1-clique;B - 1-clique;2025-03-01;2025-04-15;conversao;0.03;0.24;vencedor
+E02;Frete grátis R$99;A - Controle;2025-01-10;2025-02-28;ticket_medio;218.40;0.00;baseline
+E02;Frete grátis R$99;B - Frete grátis;2025-01-10;2025-02-28;ticket_medio;241.70;0.11;vencedor
+E03;Banner home personalizado;A - Genérico;2025-06-01;2025-07-15;add_to_cart;0.12;0.00;baseline
+E03;Banner home personalizado;B - Personalizado;2025-06-01;2025-07-15;add_to_cart;0.13;0.14;vencedor
+E04;Review stars na listagem;A - Sem stars;2025-08-01;2025-09-15;conversao;0.02;0.00;baseline
+E04;Review stars na listagem;B - Com stars;2025-08-01;2025-09-15;conversao;0.03;0.09;vencedor
+E05;Push de abandono de carrinho;A - Sem push;2025-10-01;2025-11-20;recuperacao;0.08;0.00;baseline
+E05;Push de abandono de carrinho;B - Push 1h;2025-10-01;2025-11-20;recuperacao;0.14;0.75;vencedor
+E06;Página de produto A/B layout;A - Layout atual;2026-01-15;2026-03-01;conversao;0.02;0.00;baseline
+E06;Página de produto A/B layout;B - Layout novo;2026-01-15;2026-03-01;conversao;0.03;0.06;empatado
+E07;Cupom primeira compra App;A - Sem cupom;2026-04-01;2026-05-15;novos_clientes;420.00;0.00;baseline
+E07;Cupom primeira compra App;B - 10% off;2026-04-01;2026-05-15;novos_clientes;510.00;0.21;vencedor

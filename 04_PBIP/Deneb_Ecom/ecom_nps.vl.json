@@ -1,0 +1,147 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "name": "dataset"
+  },
+  "width": "container",
+  "height": "container",
+  "encoding": {
+    "x": {
+      "field": "mes",
+      "type": "ordinal",
+      "sort": {
+        "field": "ord",
+        "op": "min",
+        "order": "ascending"
+      },
+      "axis": {
+        "title": null,
+        "labelAngle": -45
+      }
+    }
+  },
+  "layer": [
+    {
+      "transform": [
+        {
+          "fold": [
+            "prom",
+            "neu",
+            "det"
+          ],
+          "as": [
+            "classe",
+            "pct"
+          ]
+        },
+        {
+          "calculate": "datum.classe == 'prom' ? 'Promotores' : datum.classe == 'neu' ? 'Neutros' : 'Detratores'",
+          "as": "Classe"
+        },
+        {
+          "calculate": "datum.classe == 'prom' ? 1 : datum.classe == 'neu' ? 2 : 3",
+          "as": "co"
+        }
+      ],
+      "mark": {
+        "type": "bar",
+        "width": {
+          "band": 0.7
+        }
+      },
+      "encoding": {
+        "y": {
+          "field": "pct",
+          "type": "quantitative",
+          "stack": "normalize",
+          "axis": {
+            "title": null,
+            "format": ".0%"
+          }
+        },
+        "color": {
+          "field": "Classe",
+          "type": "nominal",
+          "scale": {
+            "domain": [
+              "Promotores",
+              "Neutros",
+              "Detratores"
+            ],
+            "range": [
+              "#18B89F",
+              "#3D6E72",
+              "#EF9277"
+            ]
+          },
+          "legend": {
+            "title": null
+          }
+        },
+        "order": {
+          "field": "co"
+        },
+        "tooltip": [
+          {
+            "field": "mes",
+            "title": "Mês"
+          },
+          {
+            "field": "Classe"
+          },
+          {
+            "field": "pct",
+            "title": "%",
+            "format": ".1%"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "line",
+        "color": "#F2C46D",
+        "strokeWidth": 2.5,
+        "point": {
+          "filled": true,
+          "size": 30,
+          "color": "#F2C46D"
+        }
+      },
+      "encoding": {
+        "y": {
+          "field": "nps",
+          "type": "quantitative",
+          "axis": {
+            "title": "NPS",
+            "orient": "right",
+            "grid": false,
+            "labelColor": "#F2C46D",
+            "titleColor": "#F2C46D"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "mes",
+            "title": "Mês"
+          },
+          {
+            "field": "nps",
+            "title": "NPS",
+            "format": "+.1f"
+          },
+          {
+            "field": "resp",
+            "title": "Respostas",
+            "format": ",.0f"
+          }
+        ]
+      }
+    }
+  ],
+  "resolve": {
+    "scale": {
+      "y": "independent"
+    }
+  }
+}

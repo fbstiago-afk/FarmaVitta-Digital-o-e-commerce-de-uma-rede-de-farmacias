@@ -1,0 +1,301 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "79e6849b402951c399ea",
+  "position": {
+    "x": 254,
+    "y": 276,
+    "z": 1230,
+    "height": 408,
+    "width": 1028,
+    "tabOrder": 1230
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dProduto"
+                    }
+                  },
+                  "Property": "Subcategoria"
+                }
+              },
+              "queryRef": "dProduto.Subcategoria",
+              "nativeQueryRef": "Subcategoria",
+              "displayName": "sub"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dProduto"
+                    }
+                  },
+                  "Property": "Categoria"
+                }
+              },
+              "queryRef": "dProduto.Categoria",
+              "nativeQueryRef": "Categoria",
+              "displayName": "cat"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Unidades Digitais Itens"
+                }
+              },
+              "queryRef": "_Medidas.Unidades Digitais Itens",
+              "nativeQueryRef": "Unidades Digitais Itens",
+              "displayName": "un"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "% Avaliações Abaixo de 4"
+                }
+              },
+              "queryRef": "_Medidas.% Avaliações Abaixo de 4",
+              "nativeQueryRef": "% Avaliações Abaixo de 4",
+              "displayName": "baixa"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Avaliações"
+                }
+              },
+              "queryRef": "_Medidas.Avaliações",
+              "nativeQueryRef": "Avaliações",
+              "displayName": "aval"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Nota Média Produto"
+                }
+              },
+              "queryRef": "_Medidas.Nota Média Produto",
+              "nativeQueryRef": "Nota Média Produto",
+              "displayName": "nota"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\":\"https://vega.github.io/schema/vega-lite/v5.json\",\"data\":{\"name\":\"dataset\"},\"width\":\"container\",\"height\":\"container\",\"transform\":[{\"filter\":\"datum.aval >= 20\"},{\"joinaggregate\":[{\"op\":\"median\",\"field\":\"un\",\"as\":\"mun\"},{\"op\":\"median\",\"field\":\"baixa\",\"as\":\"mba\"}]},{\"calculate\":\"datum.un >= datum.mun && datum.baixa > datum.mba && datum.baixa > 0 ? ''Prioridade: volume alto + insatisfação'' : ''Demais''\",\"as\":\"quad\"}],\"layer\":[{\"mark\":{\"type\":\"circle\",\"opacity\":0.85,\"stroke\":\"#071E23\",\"strokeWidth\":1},\"encoding\":{\"x\":{\"field\":\"un\",\"type\":\"quantitative\",\"axis\":{\"title\":\"unidades vendidas no digital\"},\"scale\":{\"zero\":false}},\"y\":{\"field\":\"baixa\",\"type\":\"quantitative\",\"axis\":{\"title\":\"% avaliações abaixo de 4\",\"format\":\".1%\"},\"scale\":{\"zero\":false}},\"size\":{\"field\":\"aval\",\"type\":\"quantitative\",\"scale\":{\"range\":[60,700]},\"legend\":null},\"color\":{\"field\":\"quad\",\"type\":\"nominal\",\"scale\":{\"domain\":[\"Prioridade: volume alto + insatisfação\",\"Demais\"],\"range\":[\"#EF9277\",\"#18B89F\"]},\"legend\":{\"title\":null}},\"tooltip\":[{\"field\":\"sub\",\"title\":\"Subcategoria\"},{\"field\":\"cat\",\"title\":\"Categoria\"},{\"field\":\"un\",\"title\":\"Unidades digitais\",\"format\":\",.0f\"},{\"field\":\"aval\",\"title\":\"Avaliações\",\"format\":\",.0f\"},{\"field\":\"baixa\",\"title\":\"% abaixo de 4\",\"format\":\".1%\"},{\"field\":\"nota\",\"title\":\"Nota média\",\"format\":\".2f\"}]}},{\"transform\":[{\"filter\":\"datum.baixa > 0\"}],\"mark\":{\"type\":\"text\",\"fontSize\":9,\"dy\":-12,\"color\":\"#9FC9C1\"},\"encoding\":{\"x\":{\"field\":\"un\",\"type\":\"quantitative\"},\"y\":{\"field\":\"baixa\",\"type\":\"quantitative\"},\"text\":{\"field\":\"sub\"}}},{\"mark\":{\"type\":\"rule\",\"color\":\"rgba(255,255,255,0.25)\",\"strokeDash\":[4,3]},\"encoding\":{\"x\":{\"aggregate\":\"median\",\"field\":\"un\"}}},{\"mark\":{\"type\":\"rule\",\"color\":\"rgba(255,255,255,0.25)\",\"strokeDash\":[4,3]},\"encoding\":{\"y\":{\"aggregate\":\"median\",\"field\":\"baixa\"}}}]}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"view\":{\"stroke\":\"transparent\"},\"background\":\"transparent\",\"font\":\"Segoe UI\",\"padding\":4,\"axis\":{\"labelColor\":\"#9FC9C1\",\"titleColor\":\"#9FC9C1\",\"gridColor\":\"rgba(255,255,255,0.07)\",\"domainColor\":\"rgba(255,255,255,0.15)\",\"tickColor\":\"rgba(255,255,255,0.15)\",\"labelFontSize\":10,\"titleFontSize\":10,\"titleFontWeight\":\"normal\"},\"legend\":{\"labelColor\":\"#E8F3F1\",\"titleColor\":\"#9FC9C1\",\"orient\":\"top\",\"labelFontSize\":10,\"symbolSize\":80},\"text\":{\"color\":\"#E8F3F1\",\"fontSize\":10},\"locale\":{\"number\":{\"decimal\":\",\",\"thousands\":\".\",\"grouping\":[3],\"currency\":[\"R$ \",\"\"]}}}'"
+                }
+              }
+            },
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "enableHighlight": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Matriz de oportunidade por subcategoria'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#DDF5EB'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI Semibold'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'x = volume digital · y = % avaliações abaixo de 4 · tamanho = nº de avaliações · linhas = medianas'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#9FC9C1'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

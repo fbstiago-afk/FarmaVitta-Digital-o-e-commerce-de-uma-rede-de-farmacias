@@ -1,0 +1,76 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.0.0/schema.json",
+  "themeCollection": {
+    "customTheme": {
+      "name": "FarmaVitta_Tema_Dark.json",
+      "reportVersionAtImport": {
+        "visual": "2.2.0",
+        "report": "3.0.0",
+        "page": "2.0.0"
+      },
+      "type": "RegisteredResources"
+    }
+  },
+  "publicCustomVisuals": [
+    "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "htmlContent443BE3AD55E043BF878BED274D3A6855"
+  ],
+  "resourcePackages": [
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "FarmaVitta_Tema_Dark.json",
+          "path": "FarmaVitta_Tema_Dark.json",
+          "type": "CustomTheme"
+        },
+        {
+          "name": "ecom_home.png",
+          "path": "ecom_home.png",
+          "type": "Image"
+        },
+        {
+          "name": "ecom_exec.png",
+          "path": "ecom_exec.png",
+          "type": "Image"
+        },
+        {
+          "name": "ecom_funil.png",
+          "path": "ecom_funil.png",
+          "type": "Image"
+        },
+        {
+          "name": "ecom_cx.png",
+          "path": "ecom_cx.png",
+          "type": "Image"
+        },
+        {
+          "name": "ecom_prod.png",
+          "path": "ecom_prod.png",
+          "type": "Image"
+        },
+        {
+          "name": "ecom_cli.png",
+          "path": "ecom_cli.png",
+          "type": "Image"
+        },
+        {
+          "name": "ecom_estr.png",
+          "path": "ecom_estr.png",
+          "type": "Image"
+        },
+        {
+          "name": "logo_negativo.png",
+          "path": "logo_negativo.png",
+          "type": "Image"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": "AllowSummarized",
+    "defaultDrillFilterOtherVisuals": true
+  }
+}

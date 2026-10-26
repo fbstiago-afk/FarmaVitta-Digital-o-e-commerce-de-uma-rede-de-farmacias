@@ -1,0 +1,87 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/1.4.0/schema.json",
+  "displayName": "Funil & Conversão · filtros abrir",
+  "name": "51a96d91d96a5eb8b495",
+  "options": {
+    "applyOnlyToTargetVisuals": true,
+    "targetVisualNames": [
+      "302cd42279b75e11b390",
+      "ba28f3beaeca5ef8a775",
+      "8f303dc436025cad9f39",
+      "2eb870aa3f2951c6b48e",
+      "96b4b536615c5a6c99b6",
+      "d6fc12b248ff55a0be9a",
+      "8b41a3c746bb5f0691c7",
+      "00a40e26f9535246a35a",
+      "544bebe51a875ccea072",
+      "3215588a4cb15cd5afd4",
+      "4779ba978723548c9cf8"
+    ],
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.3",
+    "activeSection": "a68c745902c35b32b06e",
+    "sections": {
+      "a68c745902c35b32b06e": {
+        "visualContainers": {
+          "302cd42279b75e11b390": {
+            "singleVisual": {
+              "visualType": "shape"
+            }
+          },
+          "ba28f3beaeca5ef8a775": {
+            "singleVisual": {
+              "visualType": "textbox"
+            }
+          },
+          "8f303dc436025cad9f39": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          },
+          "2eb870aa3f2951c6b48e": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "96b4b536615c5a6c99b6": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "d6fc12b248ff55a0be9a": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "8b41a3c746bb5f0691c7": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "00a40e26f9535246a35a": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "544bebe51a875ccea072": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "3215588a4cb15cd5afd4": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          },
+          "4779ba978723548c9cf8": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          }
+        }
+      }
+    }
+  }
+}

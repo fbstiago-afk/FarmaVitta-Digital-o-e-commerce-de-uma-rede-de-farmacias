@@ -1,0 +1,10 @@
+﻿id_origem;nome;grupo;ordem
+O01;Orgânico Google;Orgânico;1
+O02;Google Ads;Pago;2
+O03;Meta Ads;Pago;3
+O04;Direto;Owned;4
+O05;E-mail / CRM;Owned;5
+O06;Redes Sociais Orgânico;Orgânico;6
+O07;Affiliate / Parceiros;Pago;7
+O08;Push App;Owned;8
+O09;Outros;Outros;9

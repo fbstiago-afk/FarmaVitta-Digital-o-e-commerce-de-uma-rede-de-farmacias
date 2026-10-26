@@ -1,0 +1,46 @@
+{
+  "projeto": "FarmaVitta E-commerce Intelligence",
+  "versao": "1.0",
+  "data_geracao": "2026-10-23",
+  "seed": 20261023,
+  "periodo": "2024-10-01 a 2026-09-30",
+  "canais_digitais": [
+    "Site",
+    "Aplicativo",
+    "Delivery"
+  ],
+  "kpis_referencia": {
+    "vendas_digitais": 40029,
+    "receita_digital": 9774295.05,
+    "otif_medio_pct": 87.8,
+    "sessoes_total": 1274133,
+    "conversao_global_pct": 3.14,
+    "avaliacoes": 13324,
+    "nota_media_produto": 3.98,
+    "pesquisas": 7482,
+    "nps": 5.9,
+    "csat_medio": 4.41,
+    "custo_digital_total": 1736490.06
+  },
+  "tabelas_geradas": {
+    "dim_dispositivo.csv": 4,
+    "dim_origem_trafego.csv": 9,
+    "dim_motivo_satisfacao.csv": 20,
+    "dim_iniciativa.csv": 15,
+    "f_pedidos_digitais.csv": 40029,
+    "f_sessoes_digitais.csv": 208002,
+    "f_avaliacoes_produto.csv": 13324,
+    "f_pesquisas_satisfacao.csv": 7482,
+    "f_custos_digitais_mensais.csv": 96,
+    "f_experimentos_ab.csv": 14,
+    "f_roadmap_iniciativas.csv": 360
+  },
+  "premissas": {
+    "sessoes": "Agregado diário loja×canal×dispositivo×origem; conversão alvo Site 2.2%, App 3.8%, Delivery 4.5%; pedidos alocados com largest remainder",
+    "pedidos_digitais": "1:1 com f_vendas digital; OTIF global ~88%; frete grátis ~40% tickets > R$99",
+    "avaliacoes": "~18% itens digitais de clientes identificados; nota média ~4.0",
+    "pesquisas": "~22% pedidos digitais identificados; NPS influenciado por OTIF e status",
+    "custos": "Mídia 9-14% receita digital; fulfillment e plataforma por pedido",
+    "nao_incluido": "Dados pessoais reais, preços regulatórios, fluxo de caixa, impostos, LTV econômico completo"
+  }
+}
